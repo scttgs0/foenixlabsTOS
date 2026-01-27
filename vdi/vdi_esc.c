@@ -17,10 +17,9 @@
 #include "biosbind.h"
 #include "xbiosbind.h"
 
-
 /* Local Constants */
 
-#define ldri_escape             19      /* last DRI escape = 19. */
+#define ldri_escape 19 /* last DRI escape = 19. */
 
 
 /*
@@ -38,7 +37,7 @@ static LONG crawio(WORD ch)
  */
 static void bios_conws(char *string)
 {
-    while(*string)
+    while (*string)
         Bconout(2, *string++);
 }
 
@@ -46,7 +45,7 @@ static void bios_conws(char *string)
 /*
  * escfn0 - stub to simplify lookup table
  */
-static void escfn0(Vwk * vwk)
+static void escfn0(Vwk *vwk)
 {
 }
 
@@ -59,7 +58,7 @@ static void escfn0(Vwk * vwk)
  *   INTOUT[0] = number of rows
  *   INTOUT[1] = number of columns
  */
-static void escfn1(Vwk * vwk)
+static void escfn1(Vwk *vwk)
 {
     CONTRL[4] = 2;
     INTOUT[0] = v_cel_my + 1;
@@ -78,9 +77,9 @@ static void escfn1(Vwk * vwk)
  * to circumvent this, we send a harmless escape sequence before we hide
  * the alpha cursor.
  */
-static void escfn2(Vwk * vwk)
+static void escfn2(Vwk *vwk)
 {
-    bios_conws("\033H\033f\033E");  /* home, hide alpha cursor, then clear-and-home */
+    bios_conws("\033H\033f\033E"); /* home, hide alpha cursor, then clear-and-home */
 }
 
 
@@ -90,16 +89,16 @@ static void escfn2(Vwk * vwk)
  * note: we send a CR to reset the BDOS column counter (important for
  * tab expansion)
  */
-static void escfn3(Vwk * vwk)
+static void escfn3(Vwk *vwk)
 {
-    bios_conws("\033E\033e\015");   /* clear-and-home, then show alpha cursor */
+    bios_conws("\033E\033e\015"); /* clear-and-home, then show alpha cursor */
 }
 
 
 /*
  * escfn4: v_curup() - moves the alpha cursor up one line
  */
-static void escfn4(Vwk * vwk)
+static void escfn4(Vwk *vwk)
 {
     bios_conws("\033A");
 }
@@ -108,7 +107,7 @@ static void escfn4(Vwk * vwk)
 /*
  * escfn5: v_curdown() - moves the alpha cursor down one line
  */
-static void escfn5(Vwk * vwk)
+static void escfn5(Vwk *vwk)
 {
     bios_conws("\033B");
 }
@@ -117,7 +116,7 @@ static void escfn5(Vwk * vwk)
 /*
  * escfn6: v_curright() - moves the alpha cursor right one column
  */
-static void escfn6(Vwk * vwk)
+static void escfn6(Vwk *vwk)
 {
     bios_conws("\033C");
 }
@@ -126,7 +125,7 @@ static void escfn6(Vwk * vwk)
 /*
  * escfn7: v_curleft() - moves the alpha cursor left one column
  */
-static void escfn7(Vwk * vwk)
+static void escfn7(Vwk *vwk)
 {
     bios_conws("\033D");
 }
@@ -135,7 +134,7 @@ static void escfn7(Vwk * vwk)
 /*
  * escfn8: v_curhome() - moves the alpha cursor home
  */
-static void escfn8(Vwk * vwk)
+static void escfn8(Vwk *vwk)
 {
     bios_conws("\033H");
 }
@@ -144,7 +143,7 @@ static void escfn8(Vwk * vwk)
 /*
  * escfn9: v_eeos() - clears screen from cursor position to end of screen
  */
-static void escfn9(Vwk * vwk)
+static void escfn9(Vwk *vwk)
 {
     bios_conws("\033J");
 }
@@ -153,7 +152,7 @@ static void escfn9(Vwk * vwk)
 /*
  * escfn10: v_eeol() - clears screen from cursor position to end of line
  */
-static void escfn10(Vwk * vwk)
+static void escfn10(Vwk *vwk)
 {
     bios_conws("\033K");
 }
@@ -169,14 +168,14 @@ static void escfn10(Vwk * vwk)
  *   INTIN[0] = cursor row (1 - max_y_cell)
  *   INTIN[1] = cursor column (1 - max_x_cell)
  */
-static void escfn11(Vwk * vwk)
+static void escfn11(Vwk *vwk)
 {
     char out[5];
 
     /* send string via VT-52 terminal emulation */
     out[0] = '\033';
     out[1] = 'Y';
-    out[2] = 0x20 + INTIN[0] - 1;   /* zero-based */
+    out[2] = 0x20 + INTIN[0] - 1; /* zero-based */
     out[3] = 0x20 + INTIN[1] - 1;
     out[4] = '\0';
     bios_conws(out);
@@ -193,16 +192,17 @@ static void escfn11(Vwk * vwk)
  *   CONTRL[3] = character count
  *   INTIN = character array
  */
-static void escfn12(Vwk * vwk)
+static void escfn12(Vwk *vwk)
 {
     int cnt;
     WORD *chr;
 
-    cnt = CONTRL[3];            /* get the character count */
-    chr = INTIN;                /* address of the character array */
+    cnt = CONTRL[3]; /* get the character count */
+    chr = INTIN;     /* address of the character array */
 
-    while (cnt--) {
-        crawio(*chr++);         /* raw i/o to standard input/output */
+    while (cnt--)
+    {
+        crawio(*chr++); /* raw i/o to standard input/output */
     }
 }
 
@@ -210,29 +210,29 @@ static void escfn12(Vwk * vwk)
 /*
  * escfn13: v_rvon(): - switch to reverse video
  */
-static void escfn13(Vwk * vwk)
+static void escfn13(Vwk *vwk)
 {
-    bios_conws("\033p");        /* enter reverse video */
+    bios_conws("\033p"); /* enter reverse video */
 }
 
 
 /*
  * escfn14: v_rvoff() - switch to normal video
  */
-static void escfn14(Vwk * vwk)
+static void escfn14(Vwk *vwk)
 {
-    bios_conws("\033q");        /* enter normal video */
+    bios_conws("\033q"); /* enter normal video */
 }
 
 
 /*
  * escfn15: vq_curaddress() - returns current row and column of the alpha cursor
  */
-static void escfn15(Vwk * vwk)
+static void escfn15(Vwk *vwk)
 {
-    CONTRL[4] = 2;              /* 2 integers are returned */
-    INTOUT[0] = v_cur_cy + 1;   /* row (starting at 1) */
-    INTOUT[1] = v_cur_cx + 1;   /* column (starting at 1) */
+    CONTRL[4] = 2;            /* 2 integers are returned */
+    INTOUT[0] = v_cur_cy + 1; /* row (starting at 1) */
+    INTOUT[1] = v_cur_cx + 1; /* column (starting at 1) */
 }
 
 
@@ -245,10 +245,10 @@ static void escfn15(Vwk * vwk)
  *   CONTRL[4] = 1  (# of parameters returned)
  *   INTOUT[0] = 1  (device is available)
  */
-static void escfn16(Vwk * vwk)
+static void escfn16(Vwk *vwk)
 {
-    CONTRL[4] = 1;              /* 1 integer is returned */
-    INTOUT[0] = 1;              /* there is a mouse */
+    CONTRL[4] = 1; /* 1 integer is returned */
+    INTOUT[0] = 1; /* there is a mouse */
 }
 
 
@@ -257,7 +257,7 @@ static void escfn16(Vwk * vwk)
  *
  * we call the standard xbios screen dump
  */
-static void escfn17(Vwk * vwk)
+static void escfn17(Vwk *vwk)
 {
     Scrdmp();
 }
@@ -271,48 +271,47 @@ static void escfn17(Vwk * vwk)
  * the cursor should be displayed, Atari TOS apparently ignores
  * these values, as do we ...
  */
-static void escfn18(Vwk * vwk)
+static void escfn18(Vwk *vwk)
 {
-    INTIN[0] = 0;           /* show regardless */
-    vdi_v_show_c(vwk);      /* display the graphics cursor */
+    INTIN[0] = 0;      /* show regardless */
+    vdi_v_show_c(vwk); /* display the graphics cursor */
 }
 
 
 /*
  * escfn19: v_rmcur() - remove the graphics cursor
  */
-static void escfn19(Vwk * vwk)
+static void escfn19(Vwk *vwk)
 {
-    vdi_v_hide_c(vwk);      /* hide the graphics cursor */
+    vdi_v_hide_c(vwk); /* hide the graphics cursor */
 }
 
 
 /*
  * function lookup table
  */
-static void (* const esctbl[])(Vwk *) =
-{
-    escfn0,
-    escfn1,
-    escfn2,
-    escfn3,
-    escfn4,
-    escfn5,
-    escfn6,
-    escfn7,
-    escfn8,
-    escfn9,
-    escfn10,
-    escfn11,
-    escfn12,
-    escfn13,
-    escfn14,
-    escfn15,
-    escfn16,
-    escfn17,
-    escfn18,
-    escfn19
-};
+static void (*const esctbl[])(Vwk *) =
+    {
+        escfn0,
+        escfn1,
+        escfn2,
+        escfn3,
+        escfn4,
+        escfn5,
+        escfn6,
+        escfn7,
+        escfn8,
+        escfn9,
+        escfn10,
+        escfn11,
+        escfn12,
+        escfn13,
+        escfn14,
+        escfn15,
+        escfn16,
+        escfn17,
+        escfn18,
+        escfn19};
 
 
 /*
@@ -331,15 +330,16 @@ static void (* const esctbl[])(Vwk *) =
  *   INTOUT[]  = array of output parameters.
  *   PTSOUT[]  = array of output vertices.
  */
-void vdi_v_escape(Vwk * vwk)
+void vdi_v_escape(Vwk *vwk)
 {
     UWORD escfun = CONTRL[5];
 
-    KDEBUG(("VDI esc, subfunction %u called\n",escfun));
+    KDEBUG(("VDI esc, subfunction %u called\n", escfun));
 
 #if HAVE_BEZIER
-    if (escfun == 99) {
-        v_bez_qual(vwk);        /* set quality of bezier curves */
+    if (escfun == 99)
+    {
+        v_bez_qual(vwk); /* set quality of bezier curves */
         return;
     }
 #endif
@@ -353,7 +353,7 @@ void vdi_v_escape(Vwk * vwk)
 /*
  * called by v_opnwk() to enter graphics mode
  */
-void esc_init(Vwk * vwk)
+void esc_init(Vwk *vwk)
 {
     escfn2(vwk);
 }
@@ -362,7 +362,7 @@ void esc_init(Vwk * vwk)
 /*
  * called by v_clswk() to exit graphics mode
  */
-void esc_exit(Vwk * vwk)
+void esc_exit(Vwk *vwk)
 {
     escfn3(vwk);
 }

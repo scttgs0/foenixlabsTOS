@@ -18,8 +18,7 @@
 #include "lineavars.h"
 #include "biosext.h"
 
-static BOOL in_proc;                   /* flag, if we are still running */
-
+static BOOL in_proc; /* flag, if we are still running */
 
 
 /*
@@ -27,17 +26,19 @@ static BOOL in_proc;                   /* flag, if we are still running */
  *
  * raster (ll, ur) format is desired.
  */
-void arb_corner(Rect * rect)
+void arb_corner(Rect *rect)
 {
     /* Fix the x coordinate values, if necessary. */
-    if (rect->x1 > rect->x2) {
+    if (rect->x1 > rect->x2)
+    {
         WORD temp = rect->x1;
         rect->x1 = rect->x2;
         rect->x2 = temp;
     }
 
     /* Fix the y coordinate values, if necessary. */
-    if (rect->y1 > rect->y2) {
+    if (rect->y1 > rect->y2)
+    {
         WORD temp = rect->y1;
         rect->y1 = rect->y2;
         rect->y2 = temp;
@@ -45,29 +46,29 @@ void arb_corner(Rect * rect)
 }
 
 
-
 /*
  * arb_line - copy and sort (arbitrate) the lines coordinates
  *
  * traditional (ll, ur) format is desired.
  */
-void arb_line(Line * line)
+void arb_line(Line *line)
 {
     /* Fix the x coordinate values, if necessary. */
-    if (line->x1 > line->x2) {
+    if (line->x1 > line->x2)
+    {
         WORD temp = line->x1;
         line->x1 = line->x2;
         line->x2 = temp;
     }
 
     /* Fix the y coordinate values, if necessary. */
-    if (line->y1 < line->y2) {
+    if (line->y1 < line->y2)
+    {
         WORD temp = line->y1;
         line->y1 = line->y2;
         line->y2 = temp;
     }
 }
-
 
 
 /*
@@ -77,18 +78,18 @@ void arb_line(Line * line)
  */
 static void tick_int(int u)
 {
-    if (!in_proc) {
-        in_proc = 1;                    /* set flag, that we are running */
-                                        /* MAD: evtl. registers to stack */
-        tim_addr(u);                    /* call the timer vector */
-                                        /* and back from stack */
+    if (!in_proc)
+    {
+        in_proc = 1; /* set flag, that we are running */
+                     /* MAD: evtl. registers to stack */
+        tim_addr(u); /* call the timer vector */
+                     /* and back from stack */
     }
-    in_proc = 0;                        /* allow yet another trip through */
-                                        /* MAD: evtl. registers to stack */
-    tim_chain(u);                       /* call the old timer vector too */
-                                        /* and back from stack */
+    in_proc = 0;  /* allow yet another trip through */
+                  /* MAD: evtl. registers to stack */
+    tim_chain(u); /* call the old timer vector too */
+                  /* and back from stack */
 }
-
 
 
 /*
@@ -97,20 +98,19 @@ static void tick_int(int u)
  * entry:          new vector in CONTRL[7-8]
  * exit:           old vector in CONTRL[9-10]
  */
-void vdi_vex_timv(Vwk * vwk)
+void vdi_vex_timv(Vwk *vwk)
 {
     WORD old_sr;
 
     old_sr = set_sr(0x2700);
 
-    ULONG_AT(&CONTRL[9]) = (ULONG) tim_addr;
-    tim_addr = (ETV_TIMER_T) ULONG_AT(&CONTRL[7]);
+    ULONG_AT(&CONTRL[9]) = (ULONG)tim_addr;
+    tim_addr = (ETV_TIMER_T)ULONG_AT(&CONTRL[7]);
 
     set_sr(old_sr);
 
-    INTOUT[0] = (WORD)Tickcal();        /* ms between timer C calls */
+    INTOUT[0] = (WORD)Tickcal(); /* ms between timer C calls */
 }
-
 
 
 /*
@@ -122,18 +122,16 @@ void timer_init(void)
 {
     WORD old_sr;
 
-    in_proc = 0;                        /* no vblanks in process */
+    in_proc = 0; /* no vblanks in process */
 
     /* Now initialize the lower level things */
-    tim_addr = (ETV_TIMER_T)just_rts;   /* tick points to rts */
+    tim_addr = (ETV_TIMER_T)just_rts; /* tick points to rts */
 
-    old_sr = set_sr(0x2700);            /* disable interrupts */
-    tim_chain = (ETV_TIMER_T)           /* save old vector */
-        Setexc(0x100, (long)tick_int);  /* set etv_timer to tick_int */
-    set_sr(old_sr);                     /* enable interrupts */
-
+    old_sr = set_sr(0x2700);           /* disable interrupts */
+    tim_chain = (ETV_TIMER_T)          /* save old vector */
+        Setexc(0x100, (long)tick_int); /* set etv_timer to tick_int */
+    set_sr(old_sr);                    /* enable interrupts */
 }
-
 
 
 /*
@@ -145,11 +143,10 @@ void timer_exit(void)
 {
     WORD old_sr;
 
-    old_sr = set_sr(0x2700);            /* disable interrupts */
-    Setexc(0x100, (long)tim_chain);     /* set etv_timer to tick_int */
-    set_sr(old_sr);                     /* enable interrupts */
+    old_sr = set_sr(0x2700);        /* disable interrupts */
+    Setexc(0x100, (long)tim_chain); /* set etv_timer to tick_int */
+    set_sr(old_sr);                 /* enable interrupts */
 }
-
 
 
 /*
@@ -163,15 +160,15 @@ void timer_exit(void)
  * our point of view: high-order bits are 1-filled, so the number remains
  * negative.
  */
-UWORD * get_start_addr(const WORD x, const WORD y)
+UWORD *get_start_addr(const WORD x, const WORD y)
 {
-    UBYTE * addr;
-    WORD x2 = x & 0xfff0;   /* ensure that value to be shifted remains signed! */
+    UBYTE *addr;
+    WORD x2 = x & 0xfff0; /* ensure that value to be shifted remains signed! */
 
     /* init address counter */
-    addr = v_bas_ad;                    /* start of screen */
-    addr += x2 >> v_planes_shift;       /* add x coordinate part of addr */
-    addr += muls(y, v_lin_wr);          /* add y coordinate part of addr */
+    addr = v_bas_ad;              /* start of screen */
+    addr += x2 >> v_planes_shift; /* add x coordinate part of addr */
+    addr += muls(y, v_lin_wr);    /* add y coordinate part of addr */
 
-    return (UWORD*)addr;
+    return (UWORD *)addr;
 }

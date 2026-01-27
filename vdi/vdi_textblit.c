@@ -23,7 +23,6 @@
 #include "vdi_inline.h"
 #include "biosext.h"
 
-
 /*
  * the following structure mimics the format of the stack frame
  * containing the local variables used by the lower-level assembler
@@ -32,70 +31,71 @@
  * this could (and should) be cleaned up at some time, but any changes
  * MUST be synchronised with corresponding changes to the assembler code.
  */
-typedef struct {
-                        /* temporary working variables */
-    WORD unused5;           /* was chup_flag (=CHUP-1800) */
+typedef struct
+{
+    /* temporary working variables */
+    WORD unused5; /* was chup_flag (=CHUP-1800) */
     WORD blt_flag;
-    WORD unused1;           /* was tmp_style */
-                        /* working copies of the clipping variables */
-    WORD unused6;           /* was YMX_CLIP */
-    WORD unused7;           /* was XMX_CLIP */
-    WORD unused8;           /* was YMN_CLIP */
-    WORD unused9;           /* was XMN_CLIP */
-    WORD unused10;          /* was CLIP */
-                        /* working copies of often-used globals */
-    WORD unused11;          /* was CHUP */
+    WORD unused1;  /* was tmp_style */
+                   /* working copies of the clipping variables */
+    WORD unused6;  /* was YMX_CLIP */
+    WORD unused7;  /* was XMX_CLIP */
+    WORD unused8;  /* was YMN_CLIP */
+    WORD unused9;  /* was XMN_CLIP */
+    WORD unused10; /* was CLIP */
+                   /* working copies of often-used globals */
+    WORD unused11; /* was CHUP */
     WORD DESTY;
     WORD DELY;
     WORD DESTX;
     WORD DELX;
-    WORD unused3;           /* was SKEWMASK */
+    WORD unused3;   /* was SKEWMASK */
     WORD WRT_MODE;
     WORD STYLE;
-                        /* temps for arbitrary text scaling */
-    WORD swap_tmps;         /* nonzero if temps are swapped */
-    WORD tmp_dely;          /* temp DELY,DELX used by scaling */
+                    /* temps for arbitrary text scaling */
+    WORD swap_tmps; /* nonzero if temps are swapped */
+    WORD tmp_dely;  /* temp DELY,DELX used by scaling */
     WORD tmp_delx;
-                        /* colour, planes, etc */
-    WORD nextwrd;           /* offset to next word in same plane */
-    WORD nbrplane;          /* # planes */
-    WORD forecol;           /* foreground colour */
-                        /* masks for special effects */
-    WORD thknover;          /* overflow for word thicken */
-    WORD skew_msk;          /* rotate this to check shift */
-    WORD lite_msk;          /* AND with this to get light effect */
-    WORD ambient;           /* background colour */
-    WORD smear;             /* amount to increase width */
-                        /* vectors that may contain twoptable entries */
-    void *litejpw;          /* vector for word function after lighten */
-    void *thknjpw;          /* vector for word function after thicken */
-                        /* vectors that may contain a toptable entry */
-    void *litejpwf;         /* vector for word fringe function after lighten */
-    void *thknjpwf;         /* vector for word fringe function after thicken */
-    void *skewjmp;          /* vector for function after skew */
-    void *litejmp;          /* vector for function after lighten */
-    void *thknjmp;          /* vector for function after thicken */
-                        /* other general-usage stuff */
-    WORD wrd_cnt;           /* number inner loop words for left/right */
-    WORD shif_cnt;          /* shift count for use by left/right shift routines */
-    WORD rota_msk;          /* overlap between words in inner loop */
-    WORD left_msk;          /* fringes of destination to be affected */
+                    /* colour, planes, etc */
+    WORD nextwrd;   /* offset to next word in same plane */
+    WORD nbrplane;  /* # planes */
+    WORD forecol;   /* foreground colour */
+                    /* masks for special effects */
+    WORD thknover;  /* overflow for word thicken */
+    WORD skew_msk;  /* rotate this to check shift */
+    WORD lite_msk;  /* AND with this to get light effect */
+    WORD ambient;   /* background colour */
+    WORD smear;     /* amount to increase width */
+                    /* vectors that may contain twoptable entries */
+    void *litejpw;  /* vector for word function after lighten */
+    void *thknjpw;  /* vector for word function after thicken */
+                    /* vectors that may contain a toptable entry */
+    void *litejpwf; /* vector for word fringe function after lighten */
+    void *thknjpwf; /* vector for word fringe function after thicken */
+    void *skewjmp;  /* vector for function after skew */
+    void *litejmp;  /* vector for function after lighten */
+    void *thknjmp;  /* vector for function after thicken */
+                    /* other general-usage stuff */
+    WORD wrd_cnt;   /* number inner loop words for left/right */
+    WORD shif_cnt;  /* shift count for use by left/right shift routines */
+    WORD rota_msk;  /* overlap between words in inner loop */
+    WORD left_msk;  /* fringes of destination to be affected */
     WORD rite_msk;
-    WORD thk_msk;           /* right fringe mask, before thicken */
+    WORD thk_msk; /* right fringe mask, before thicken */
     WORD src_wthk;
-    WORD src_wrd;           /* # full words between fringes (source) (before thicken) */
-    WORD dest_wrd;          /* # full words between fringes (destination) */
-    WORD tddad;             /* destination dot address */
-    WORD tsdad;             /* source dot address (pixel address, 0-15 word offset) */
-    WORD height;            /* height of area in pixels */
-    WORD width;             /* width of area in pixels */
-    WORD d_next;            /* width of dest form (_v_lin_wr formerly used) */
-    WORD s_next;            /* width of source form (formerly s_width) */
-    UBYTE *dform;           /* start of destination form */
-    UBYTE *sform;           /* start of source form */
-    WORD unused2;           /* was buffc */
-    WORD unused4;           /* was buffb */
-    WORD buffa;             /* for clip & prerotate blt */
+    WORD src_wrd;  /* # full words between fringes (source) (before thicken) */
+    WORD dest_wrd; /* # full words between fringes (destination) */
+    WORD tddad;    /* destination dot address */
+    WORD tsdad;    /* source dot address (pixel address, 0-15 word offset) */
+    WORD height;   /* height of area in pixels */
+    WORD width;    /* width of area in pixels */
+    WORD d_next;   /* width of dest form (_v_lin_wr formerly used) */
+    WORD s_next;   /* width of source form (formerly s_width) */
+    UBYTE *dform;  /* start of destination form */
+    UBYTE *sform;  /* start of source form */
+    WORD unused2;  /* was buffc */
+    WORD unused4;  /* was buffb */
+    WORD buffa;    /* for clip & prerotate blt */
 } LOCALVARS;
 
 /* here we should have the preprocessor verify the length of LOCALVARS */
@@ -105,17 +105,17 @@ typedef struct {
  */
 void normal_blit(LOCALVARS *vars, UBYTE *src, UBYTE *dst);
 void outline(LOCALVARS *vars);
-void rotate(LOCALVARS *vars);   /* actually local, but non-static improves performance */
+void rotate(LOCALVARS *vars); /* actually local, but non-static improves performance */
 void scale(LOCALVARS *vars);
 
 /*
  * the following table maps a 4-bit sequence to its reverse
  */
 static UBYTE reverse_nybble[] =
-/*  0000  0001  0010  0011  0100  0101  0110  0111  */
-{   0x00, 0x08, 0x04, 0x0c, 0x02, 0x0a, 0x06, 0x0e,
-/*  1000  1001  1010  1011  1100  1101  1110  1111  */
-    0x01, 0x09, 0x05, 0x0d, 0x03, 0x0b, 0x07, 0x0f };
+    /*  0000  0001  0010  0011  0100  0101  0110  0111  */
+    {0x00, 0x08, 0x04, 0x0c, 0x02, 0x0a, 0x06, 0x0e,
+     /*  1000  1001  1010  1011  1100  1101  1110  1111  */
+     0x01, 0x09, 0x05, 0x0d, 0x03, 0x0b, 0x07, 0x0f};
 
 
 /*
@@ -137,29 +137,34 @@ static WORD check_clip(LOCALVARS *vars, WORD delx, WORD dely)
     /*
      * check x coordinate
      */
-    if (vars->DESTX < XMINCL)               /* (partially) left of clip window */
+    if (vars->DESTX < XMINCL) /* (partially) left of clip window */
     {
-        if (vars->DESTX+delx <= XMINCL)     /* wholly left of clip window */
+        if (vars->DESTX + delx <= XMINCL) /* wholly left of clip window */
             return -1;
         rc = 1;
     }
-    if (vars->DESTX > XMAXCL)               /* wholly right of clip window */
+
+    if (vars->DESTX > XMAXCL) /* wholly right of clip window */
         return -1;
-    if (vars->DESTX+delx > XMAXCL)          /* partially right of clip window */
+
+    if (vars->DESTX + delx > XMAXCL) /* partially right of clip window */
         rc = 1;
 
     /*
      * check y coordinate
      */
-    if (vars->DESTY < YMINCL)               /* (partially) below clip window */
+    if (vars->DESTY < YMINCL) /* (partially) below clip window */
     {
-        if (vars->DESTY+dely <= YMINCL)     /* wholly below clip window */
+        if (vars->DESTY + dely <= YMINCL) /* wholly below clip window */
             return -1;
+
         rc = 1;
     }
-    if (vars->DESTY > YMAXCL)               /* wholly above clip window */
+
+    if (vars->DESTY > YMAXCL) /* wholly above clip window */
         return -1;
-    if (vars->DESTY+dely > YMAXCL)          /* partially above clip window */
+
+    if (vars->DESTY + dely > YMAXCL) /* partially above clip window */
         rc = 1;
 
     return rc;
@@ -201,6 +206,7 @@ static WORD do_clip(LOCALVARS *vars)
      */
     if (vars->DESTX > XMAXCL)
         return -1;
+
     n = vars->DESTX + vars->DELX - XMAXCL - 1;
     if (n > 0)
         vars->DELX -= n;
@@ -223,6 +229,7 @@ static WORD do_clip(LOCALVARS *vars)
      */
     if (vars->DESTY > YMAXCL)
         return -1;
+
     n = vars->DESTY + vars->DELY - YMAXCL - 1;
     if (n > 0)
         vars->DELY -= n;
@@ -238,7 +245,8 @@ static WORD do_clip(LOCALVARS *vars)
  */
 static ULONG merge_byte(UWORD *p, UWORD n)
 {
-    union {
+    union
+    {
         ULONG a;
         UBYTE b[4];
     } work;
@@ -302,7 +310,7 @@ void outline(LOCALVARS *vars)
             top_right = merge_byte(scratch, prev);
             rorl(top_right, 1);
             top_left = top_noshift = top_right;
-            top_left ^= current_left;           /* neighbours 1,2,3 */
+            top_left ^= current_left; /* neighbours 1,2,3 */
             top_noshift ^= current_noshift;
             top_right ^= current_right;
             roll(top_noshift, 1);
@@ -311,7 +319,7 @@ void outline(LOCALVARS *vars)
 
             /* get the data from the next line & merge into result */
             bottom_right = bottom_noshift = bottom_left;
-            bottom_left ^= current_left;        /* neighbours 4,5,6 */
+            bottom_left ^= current_left; /* neighbours 4,5,6 */
             bottom_noshift ^= current_noshift;
             bottom_right ^= current_right;
             roll(bottom_noshift, 1);
@@ -319,11 +327,11 @@ void outline(LOCALVARS *vars)
             result |= (bottom_left | bottom_noshift | bottom_right);
 
             /* finally, merge current line neighbours */
-            current_left ^= current_noshift;    /* neighbours 7,8 */
+            current_left ^= current_noshift; /* neighbours 7,8 */
             current_right ^= current_noshift;
             roll(current_right, 2);
             result |= (current_left | current_right);
-            result >>= 16;                      /* move to lower 16 bits */
+            result >>= 16; /* move to lower 16 bits */
 
             prev = curr = *currline;
             prev = (prev ^ result) & result;
@@ -339,7 +347,7 @@ void outline(LOCALVARS *vars)
         nextline = save_next;
         currline = nextline;
 
-        if (i > 2)                              /* mustn't go past end */
+        if (i > 2) /* mustn't go past end */
             nextline += form_width;
     }
 }
@@ -359,15 +367,16 @@ static void pre_blit(LOCALVARS *vars)
 
     vars->height = vars->DELY;
 
-    vars->tsdad = SOURCEX & 0x000f;     /* source dot address */
-    offset = (SOURCEY+vars->DELY-1) * (LONG)vars->s_next + ((SOURCEX >> 3) & ~1);
-    src = vars->sform + offset;         /* bottom of font char source */
-    vars->s_next = -vars->s_next;       /* we draw from the bottom up */
+    vars->tsdad = SOURCEX & 0x000f; /* source dot address */
+    offset = (SOURCEY + vars->DELY - 1) * (LONG)vars->s_next + ((SOURCEX >> 3) & ~1);
+    src = vars->sform + offset;   /* bottom of font char source */
+    vars->s_next = -vars->s_next; /* we draw from the bottom up */
 
     weight = WEIGHT;
     skew = LOFF + ROFF;
 
     dest_width = vars->DELX;
+
     if (vars->STYLE & F_THICKEN)
     {
         dest_width += weight;
@@ -381,26 +390,30 @@ static void pre_blit(LOCALVARS *vars)
     dest_height = vars->DELY;
     if (vars->STYLE & F_OUTLINE)
     {
-        dest_width += 3;        /* add 1 left & 2 right pixels */
-        vars->tddad += 1;       /* and make leftmost column blank */
-        vars->DELY += 2;        /* add 2 rows */
-        dest_height += 3;       /* add 3 rows for buffer clear */
+        dest_width += 3;  /* add 1 left & 2 right pixels */
+        vars->tddad += 1; /* and make leftmost column blank */
+        vars->DELY += 2;  /* add 2 rows */
+        dest_height += 3; /* add 3 rows for buffer clear */
     }
+
     vars->width = dest_width;
     dest_width += skew;
     vars->DELX = dest_width;
-    dest_width = ((dest_width >> 4) << 1) + 2;    /* in bytes */
+    dest_width = ((dest_width >> 4) << 1) + 2; /* in bytes */
     vars->d_next = -dest_width;
     size = dest_width * (dest_height - 1);
     vars->buffa = SCRPT2 - vars->buffa; /* switch buffers */
     dst = (UBYTE *)SCRTCHP + vars->buffa;
     vars->sform = dst;
-    if (vars->STYLE & (F_OUTLINE|F_SKEW))
+
+    if (vars->STYLE & (F_OUTLINE | F_SKEW))
     {
         p = (WORD *)vars->sform;
-        n = (size - vars->d_next) / 2;  /* add bottom line */
-        while(n--)
-            *p++ = 0;               /* clear buffer */
+        n = (size - vars->d_next) / 2; /* add bottom line */
+
+        while (n--)
+            *p++ = 0; /* clear buffer */
+
         if (vars->STYLE & F_OUTLINE)
         {
             vars->width -= 3;
@@ -409,20 +422,20 @@ static void pre_blit(LOCALVARS *vars)
         }
     }
 
-    dst += size;                     /* start at the bottom */
+    dst += size; /* start at the bottom */
     vars->WRT_MODE = 0;
     vars->forecol = 1;
     vars->ambient = 0;
-    vars->nbrplane = 1;             /* 1 plane for this blit */
+    vars->nbrplane = 1; /* 1 plane for this blit */
     vars->nextwrd = 2;
-    tmp_style = vars->STYLE;        /* save temporarily */
-    vars->STYLE &= (F_SKEW|F_THICKEN);  /* only thicken, skew */
+    tmp_style = vars->STYLE;             /* save temporarily */
+    vars->STYLE &= (F_SKEW | F_THICKEN); /* only thicken, skew */
 
-    normal_blit(vars+1, src, dst);  /* call assembler helper function */
+    normal_blit(vars + 1, src, dst); /* call assembler helper function */
 
-    vars->STYLE = tmp_style;        /* restore */
+    vars->STYLE = tmp_style; /* restore */
     vars->WRT_MODE = WRT_MODE;
-    vars->s_next = -vars->d_next;   /* reset the source to the buffer */
+    vars->s_next = -vars->d_next; /* reset the source to the buffer */
 
     if (vars->STYLE & F_OUTLINE)
     {
@@ -432,7 +445,7 @@ static void pre_blit(LOCALVARS *vars)
 
     SOURCEX = 0;
     SOURCEY = 0;
-    vars->STYLE &= ~(F_SKEW|F_THICKEN); /* cancel effects */
+    vars->STYLE &= ~(F_SKEW | F_THICKEN); /* cancel effects */
 }
 
 
@@ -448,7 +461,7 @@ void rotate(LOCALVARS *vars)
 
     vars->tsdad = SOURCEX & 0x000f;
     src = vars->sform + ((SOURCEX >> 4) << 1);
-    vars->buffa = SCRPT2 - vars->buffa;     /* switch buffers */
+    vars->buffa = SCRPT2 - vars->buffa; /* switch buffers */
     dst = (UBYTE *)SCRTCHP + vars->buffa;
 
     vars->width = vars->DELX;
@@ -459,7 +472,7 @@ void rotate(LOCALVARS *vars)
      */
     if (CHUP == 1800)
     {
-        form_width = ((vars->DELX+vars->tsdad-1) >> 4) + 1; /* in words */
+        form_width = ((vars->DELX + vars->tsdad - 1) >> 4) + 1; /* in words */
         vars->d_next = form_width * sizeof(WORD);
         q = (UWORD *)(dst + vars->d_next * vars->height);
         for (i = vars->height; i > 0; i--)
@@ -467,21 +480,26 @@ void rotate(LOCALVARS *vars)
             for (j = form_width, p = (UWORD *)src; j > 0; j--)
             {
                 in = *p++;
-                out = reverse_nybble[in&0x000f];    /* reverse 4 bits at a time */
+                out = reverse_nybble[in & 0x000f]; /* reverse 4 bits at a time */
+
                 for (k = 3; k > 0; k--)
                 {
                     out <<= 4;
                     in >>= 4;
-                    out |= reverse_nybble[in&0x000f];
+                    out |= reverse_nybble[in & 0x000f];
                 }
+
                 *--q = out;
             }
+
             src += vars->s_next;
         }
+
         vars->s_next = vars->d_next;
         vars->sform = (UBYTE *)SCRTCHP + vars->buffa;
         SOURCEX = -(SOURCEX + vars->DELX) & 0x000f;
         SOURCEY = 0;
+
         return;
     }
 
@@ -495,7 +513,7 @@ void rotate(LOCALVARS *vars)
         dst += (vars->DELX - 1) * vars->d_next;
         vars->d_next = -vars->d_next;
     }
-    else        /* 2700 */
+    else /* 2700 */
     {
         src += (SOURCEY + vars->height - 1) * vars->s_next;
         vars->s_next = -vars->s_next;
@@ -506,12 +524,14 @@ void rotate(LOCALVARS *vars)
     out = 0;
     p = (UWORD *)src;
     q = (UWORD *)dst;
+
     for (i = vars->width; i > 0; i--)
     {
         for (j = vars->height; j > 0; j--)
         {
             if (*p & srcbit)
                 out |= dstbit;
+
             dstbit >>= 1;
             if (!dstbit)
             {
@@ -519,6 +539,7 @@ void rotate(LOCALVARS *vars)
                 *q++ = out;
                 out = 0;
             }
+
             p = (UWORD *)((UBYTE *)p + vars->s_next);
         }
 
@@ -538,7 +559,7 @@ void rotate(LOCALVARS *vars)
         p = (UWORD *)src;
     }
 
-    vars->height = vars->DELX;  /* swap width & height */
+    vars->height = vars->DELX; /* swap width & height */
     vars->width = vars->DELY;
     vars->DELX = vars->width;
     vars->DELY = vars->height;
@@ -548,7 +569,7 @@ void rotate(LOCALVARS *vars)
     vars->swap_tmps = 1;
 
     vars->s_next = (CHUP == 900) ? -vars->d_next : vars->d_next;
-    vars->sform = (UBYTE*)SCRTCHP + vars->buffa;
+    vars->sform = (UBYTE *)SCRTCHP + vars->buffa;
     SOURCEX = 0;
     SOURCEY = 0;
 }
@@ -560,11 +581,11 @@ void rotate(LOCALVARS *vars)
 static __inline__ UWORD *shift_and_update(UWORD *dst, UWORD *dstbit, UWORD *out)
 {
     *dstbit >>= 1;
-    if (!*dstbit)           /* end of word ? */
+    if (!*dstbit) /* end of word ? */
     {
-        *dstbit = 0x8000;   /* reset test bit */
-        *dst++ = *out;      /* output accumulated word */
-        *out = 0;           /* & reset it */
+        *dstbit = 0x8000; /* reset test bit */
+        *dst++ = *out;    /* output accumulated word */
+        *out = 0;         /* & reset it */
     }
 
     return dst;
@@ -585,11 +606,11 @@ static void scaleup(LOCALVARS *vars, UWORD *src, UWORD *dst)
 
     out = 0;
     accum = XDDA;
-    in = *src++;        /* prime the source word */
+    in = *src++; /* prime the source word */
 
     for (i = vars->width; i > 0; i--)
     {
-        if (in & srcbit)            /* handle bit set in source */
+        if (in & srcbit) /* handle bit set in source */
         {
             accum += DDAINC;
             if (accum < DDAINC)
@@ -597,16 +618,18 @@ static void scaleup(LOCALVARS *vars, UWORD *src, UWORD *dst)
                 out |= dstbit;
                 dst = shift_and_update(dst, &dstbit, &out);
             }
+
             out |= dstbit;
             dst = shift_and_update(dst, &dstbit, &out);
         }
-        else                        /* handle bit clear in source */
+        else /* handle bit clear in source */
         {
             accum += DDAINC;
             if (accum < DDAINC)
             {
                 dst = shift_and_update(dst, &dstbit, &out);
             }
+
             dst = shift_and_update(dst, &dstbit, &out);
         }
 
@@ -636,11 +659,11 @@ static void scaledown(LOCALVARS *vars, UWORD *src, UWORD *dst)
 
     out = 0;
     accum = XDDA;
-    in = *src++;        /* prime the source word */
+    in = *src++; /* prime the source word */
 
     for (i = vars->width; i > 0; i--)
     {
-        if (in & srcbit)            /* handle bit set in source */
+        if (in & srcbit) /* handle bit set in source */
         {
             accum += DDAINC;
             if (accum < DDAINC)
@@ -649,7 +672,7 @@ static void scaledown(LOCALVARS *vars, UWORD *src, UWORD *dst)
                 dst = shift_and_update(dst, &dstbit, &out);
             }
         }
-        else                        /* handle bit clear in source */
+        else /* handle bit clear in source */
         {
             dst = shift_and_update(dst, &dstbit, &out);
         }
@@ -678,7 +701,7 @@ void scale(LOCALVARS *vars)
     vars->tsdad = SOURCEX & 0x000f;
     src = vars->sform + ((SOURCEX >> 4) << 1) + (SOURCEY * vars->s_next);
 
-    vars->buffa = SCRPT2 - vars->buffa;     /* switch buffers */
+    vars->buffa = SCRPT2 - vars->buffa; /* switch buffers */
     dst = (UBYTE *)SCRTCHP + vars->buffa;
 
     vars->width = vars->DELX;
@@ -690,7 +713,7 @@ void scale(LOCALVARS *vars)
      * first, scale the character
      */
     accum = 0x7fff;
-    if (SCALDIR)        /* scale up */
+    if (SCALDIR) /* scale up */
     {
         for (i = vars->height; i > 0; i--)
         {
@@ -705,7 +728,7 @@ void scale(LOCALVARS *vars)
             src += vars->s_next;
         }
     }
-    else                /* scale down */
+    else /* scale down */
     {
         for (i = vars->height; i > 0; i--)
         {
@@ -715,6 +738,7 @@ void scale(LOCALVARS *vars)
                 scaledown(vars, (UWORD *)src, (UWORD *)dst);
                 dst += vars->d_next;
             }
+
             src += vars->s_next;
         }
     }
@@ -730,6 +754,7 @@ void scale(LOCALVARS *vars)
         if (accum < DDAINC)
             delx++;
     }
+
     XDDA = accum;
 
     vars->DELX = delx;
@@ -767,13 +792,14 @@ static void direct_screen_blit16(WORD count, WORD *str)
 
     dst = get_start_addr16(DESTX, DESTY);
 
-    for ( ; count > 0; count--)
+    for (; count > 0; count--)
     {
         src = (UBYTE *)FBASE + *str++;
         save_dst = dst;
 
-        switch(mode) {
-        default:    /* WM_REPLACE */
+        switch (mode)
+        {
+        default: /* WM_REPLACE */
             for (n = height, p = src; n > 0; n--)
             {
                 for (mask = 0x80, q = dst; mask; mask >>= 1)
@@ -866,20 +892,23 @@ void direct_screen_blit(WORD count, WORD *str)
 #endif
 
     dst = (UBYTE *)get_start_addr(DESTX, DESTY);
+
     if (DESTX & 0x0008)
         dst++;
 
-    for ( ; count > 0; count--)
+    for (; count > 0; count--)
     {
         src = (UBYTE *)FBASE + *str++;
         save_dst = dst;
         forecol = TEXTFG;
+
         for (planes = v_planes; planes > 0; planes--)
         {
             UBYTE *p, *q;
 
-            switch(mode) {
-            default:    /* WM_REPLACE */
+            switch (mode)
+            {
+            default: /* WM_REPLACE */
                 if (forecol & 1)
                 {
                     for (n = height, p = src, q = dst; n > 0; n--)
@@ -947,13 +976,15 @@ void direct_screen_blit(WORD count, WORD *str)
                 }
                 break;
             }
-            dst += sizeof(WORD);    /* next plane */
+
+            dst += sizeof(WORD); /* next plane */
             forecol >>= 1;
         }
+
         dst = save_dst + 1;
-        if (!IS_ODD_POINTER(dst))   /* must go to next screen word */
+        if (!IS_ODD_POINTER(dst)) /* must go to next screen word */
         {
-            dst += (v_planes-1)*sizeof(WORD);
+            dst += (v_planes - 1) * sizeof(WORD);
         }
     }
 }
@@ -1003,21 +1034,22 @@ static void screen_blit16(LOCALVARS *vars)
      *    at the moment, this fix is a bit of a kludge, though it works well
      *    enough.
      */
-    if (skew && (vars->STYLE&F_OUTLINE))
+    if (skew && (vars->STYLE & F_OUTLINE))
     {
         if (SOURCEX)
         {
-            KDEBUG(("SOURCEX (was %d) forced to zero for intermediate buffer\n",SOURCEX));
+            KDEBUG(("SOURCEX (was %d) forced to zero for intermediate buffer\n", SOURCEX));
             SOURCEX = 0;
-            vars->tsdad = 0;    /* this was set from SOURCEX in screen_blit() */
+            vars->tsdad = 0; /* this was set from SOURCEX in screen_blit() */
         }
 
         if (DESTX < 0)
         {
-            KDEBUG(("vars->DESTX (was %d) set to DESTX (%d)\n",vars->DESTX,DESTX));
+            KDEBUG(("vars->DESTX (was %d) set to DESTX (%d)\n", vars->DESTX, DESTX));
             vars->DESTX = DESTX;
         }
-        if (vars->height > 8)       /* not a 6-point font */
+
+        if (vars->height > 8) /* not a 6-point font */
             skew_start -= OUTLINE_THICKNESS;
     }
 
@@ -1031,8 +1063,8 @@ static void screen_blit16(LOCALVARS *vars)
      * set up destination stuff
      */
     vars->dform = v_bas_ad;
-    vars->dform += vars->DESTX * sizeof(WORD);      /* add x coordinate part of addr */
-    vars->dform += (UWORD)(vars->DESTY+vars->DELY-1) * (ULONG)v_lin_wr; /* add y coordinate part of addr */
+    vars->dform += vars->DESTX * sizeof(WORD);                              /* add x coordinate part of addr */
+    vars->dform += (UWORD)(vars->DESTY + vars->DELY - 1) * (ULONG)v_lin_wr; /* add y coordinate part of addr */
     vars->d_next = -v_lin_wr;
     dst = vars->dform;
 
@@ -1043,12 +1075,13 @@ static void screen_blit16(LOCALVARS *vars)
     fgcol = palette[vars->forecol];
     bgcol = palette[0];
 
-    switch(vars->WRT_MODE) {
+    switch (vars->WRT_MODE)
+    {
     /*
      * when called via lineA, modes 4-19 (corresponding to BitBlt modes 0-15)
      * are theoretically possible.  however, at this time we do not support them.
      */
-    default:    /* WM_REPLACE */
+    default: /* WM_REPLACE */
         for (h = vars->height; h > 0; h--, src += vars->s_next, dst += vars->d_next)
         {
             p = (UWORD *)src;
@@ -1065,7 +1098,7 @@ static void screen_blit16(LOCALVARS *vars)
              * are effectively slanted, we must shift the starting position
              * of a cell rightwards as we go up the character.
              */
-            if (skew && (h <= skew_start))  /* OK to shift box for skewed text? */
+            if (skew && (h <= skew_start)) /* OK to shift box for skewed text? */
             {
                 rolw1(skew_mask);
                 if (skew_mask & 0x8000)
@@ -1096,7 +1129,7 @@ static void screen_blit16(LOCALVARS *vars)
              * see comments for WM_REPLACE (above) for an explanation of
              * the following
              */
-            if (skew && (h <= skew_start))  /* OK to shift box for skewed text? */
+            if (skew && (h <= skew_start)) /* OK to shift box for skewed text? */
             {
                 rolw1(skew_mask);
                 if (skew_mask & 0x8000)
@@ -1127,7 +1160,7 @@ static void screen_blit16(LOCALVARS *vars)
              * see comments for WM_REPLACE (above) for an explanation of
              * the following
              */
-            if (skew && (h <= skew_start))  /* OK to shift box for skewed text? */
+            if (skew && (h <= skew_start)) /* OK to shift box for skewed text? */
             {
                 rolw1(skew_mask);
                 if (skew_mask & 0x8000)
@@ -1162,7 +1195,7 @@ static void screen_blit16(LOCALVARS *vars)
              * see comments for WM_REPLACE (above) for an explanation of
              * the following
              */
-            if (skew && (h <= skew_start))  /* OK to shift box for skewed text? */
+            if (skew && (h <= skew_start)) /* OK to shift box for skewed text? */
             {
                 rolw1(skew_mask);
                 if (skew_mask & 0x8000)
@@ -1193,7 +1226,7 @@ static void screen_blit(LOCALVARS *vars)
     LONG offset;
 
     vars->forecol = TEXTFG;
-    vars->ambient = 0;          /* logically TEXTBG, but that isn't set up by the VDI */
+    vars->ambient = 0; /* logically TEXTBG, but that isn't set up by the VDI */
     vars->nbrplane = v_planes;
     vars->nextwrd = vars->nbrplane * sizeof(WORD);
     vars->height = vars->DELY;
@@ -1203,9 +1236,9 @@ static void screen_blit(LOCALVARS *vars)
      * calculate the starting address for the character to be copied
      */
     vars->tsdad = SOURCEX & 0x000f; /* source dot address */
-    offset = (SOURCEY+vars->DELY-1) * (LONG)vars->s_next + ((SOURCEX >> 3) & ~1);
+    offset = (SOURCEY + vars->DELY - 1) * (LONG)vars->s_next + ((SOURCEX >> 3) & ~1);
     vars->sform += offset;
-    vars->s_next = -vars->s_next;   /* we draw from the bottom up */
+    vars->s_next = -vars->s_next; /* we draw from the bottom up */
 
 #if CONF_WITH_VDI_16BIT
     if (TRUECOLOR_MODE)
@@ -1224,11 +1257,11 @@ static void screen_blit(LOCALVARS *vars)
      */
     vars->tddad = vars->DESTX & 0x000f;
     vars->dform = v_bas_ad;
-    vars->dform += (vars->DESTX&0xfff0)>>v_planes_shift;    /* add x coordinate part of addr */
-    vars->dform += (UWORD)(vars->DESTY+vars->DELY-1) * (ULONG)v_lin_wr; /* add y coordinate part of addr */
+    vars->dform += (vars->DESTX & 0xfff0) >> v_planes_shift;                /* add x coordinate part of addr */
+    vars->dform += (UWORD)(vars->DESTY + vars->DELY - 1) * (ULONG)v_lin_wr; /* add y coordinate part of addr */
     vars->d_next = -v_lin_wr;
 
-    normal_blit(vars+1, vars->sform, vars->dform);  /* call assembler helper function */
+    normal_blit(vars + 1, vars->sform, vars->dform); /* call assembler helper function */
 }
 
 
@@ -1258,13 +1291,16 @@ static UWORD char_resize(UWORD init, UWORD size)
 {
     UWORD accu, retval, i;
 
-    if (DDAINC == 0xffff) {     /* double size */
-        return (size<<1);
+    if (DDAINC == 0xffff)
+    { /* double size */
+        return (size << 1);
     }
+
     accu = init;
     retval = SCALDIR ? size : 0;
 
-    for (i = 0; i < size; i++) {
+    for (i = 0; i < size; i++)
+    {
         accu += DDAINC;
         if (accu < DDAINC)
             retval++;
@@ -1308,10 +1344,11 @@ void text_blt(void)
     }
 
     vars.smear = 0;
+
     if (vars.STYLE & F_THICKEN)
     {
         weight = WEIGHT;
-        if (weight == 0)        /* cancel thicken if no weight */
+        if (weight == 0) /* cancel thicken if no weight */
             vars.STYLE &= ~F_THICKEN;
         if (!MONO)
             delx += weight;
@@ -1328,12 +1365,13 @@ void text_blt(void)
         dely += OUTLINE_THICKNESS * 2;
     }
 
-    switch(CHUP) {
+    switch (CHUP)
+    {
     case 900:
         vars.DESTY -= delx;
         FALLTHROUGH;
     case 2700:
-        temp = delx;        /* swap delx/dely for 90 or 270 */
+        temp = delx; /* swap delx/dely for 90 or 270 */
         delx = dely;
         dely = temp;
         break;
@@ -1366,13 +1404,13 @@ void text_blt(void)
      *      call pre_blit()
      */
 #if CONF_WITH_VDI_16BIT
-    if (TRUECOLOR_MODE && (vars.STYLE & (F_SKEW|F_THICKEN|F_OUTLINE)))
+    if (TRUECOLOR_MODE && (vars.STYLE & (F_SKEW | F_THICKEN | F_OUTLINE)))
         need_preblit = TRUE;
     else
 #endif
-    if (vars.STYLE & F_OUTLINE)
+        if (vars.STYLE & F_OUTLINE)
         need_preblit = TRUE;
-    else if (CHUP && (vars.STYLE & (F_SKEW|F_THICKEN)))
+    else if (CHUP && (vars.STYLE & (F_SKEW | F_THICKEN)))
         need_preblit = TRUE;
     else if ((vars.STYLE & F_SKEW) && clipped)
         need_preblit = TRUE;
@@ -1416,18 +1454,19 @@ upda_dst:
         delx += WEIGHT;
     }
 
-    switch(CHUP) {
-    default:        /* normally 0, the default */
-        DESTX += delx;      /* move right by DELX */
+    switch (CHUP)
+    {
+    default:           /* normally 0, the default */
+        DESTX += delx; /* move right by DELX */
         break;
     case 900:
-        DESTY -= delx;      /* move up by DELX */
+        DESTY -= delx; /* move up by DELX */
         break;
     case 1800:
-        DESTX -= delx;      /* move left by DELX */
+        DESTX -= delx; /* move left by DELX */
         break;
     case 2700:
-        DESTY += delx;      /* move down by DELX */
+        DESTY += delx; /* move down by DELX */
         break;
     }
 }

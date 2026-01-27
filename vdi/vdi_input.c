@@ -14,7 +14,6 @@
 #include "xbiosbind.h"
 #include "vdi_defs.h"
 
-
 static WORD gchc_key(void);
 static WORD gchr_key(void);
 static WORD gshift_s(void);
@@ -28,13 +27,11 @@ static WORD gshift_s(void);
  * are not required, and both Atari TOS and EmuTOS (using the original
  * imported DRI source) implement them as dummy functions.
  */
-void vdi_v_choice(Vwk * vwk)
+void vdi_v_choice(Vwk *vwk)
 {
     gchc_key();
     INTOUT[0] = TERM_CH & 0x00ff;
-
 }
-
 
 
 /*
@@ -76,26 +73,33 @@ void vdi_v_choice(Vwk * vwk)
  *    the same results as described above for vrq_string().
  * 3. The 'echo' argument is ignored.
  */
-void vdi_v_string(Vwk * vwk)
+void vdi_v_string(Vwk *vwk)
 {
     WORD i, j, mask;
 
     mask = 0x00ff;
     j = INTIN[0];
-    if (j < 0) {
+    if (j < 0)
+    {
         j = -j;
         mask = 0xffff;
     }
-    if (!str_mode) {            /* Request mode */
+
+    if (!str_mode)
+    { /* Request mode */
         TERM_CH = 0;
-        for (i = 0; (i < j) && ((TERM_CH & 0x00ff) != 0x000d); i++) {
-            while (gchr_key() == 0);
+        for (i = 0; (i < j) && ((TERM_CH & 0x00ff) != 0x000d); i++)
+        {
+            while (gchr_key() == 0)
+                ;
             INTOUT[i] = TERM_CH = TERM_CH & mask;
         }
         if ((TERM_CH & 0x00ff) == 0x000d)
             --i;
         CONTRL[4] = i;
-    } else {                    /* Sample mode */
+    }
+    else
+    { /* Sample mode */
 
         i = 0;
         while ((gchr_key() != 0) && (i < j))
@@ -105,42 +109,40 @@ void vdi_v_string(Vwk * vwk)
 }
 
 
-
 /* Return Shift, Control, Alt State */
-void vdi_vq_key_s(Vwk * vwk)
+void vdi_vq_key_s(Vwk *vwk)
 {
     INTOUT[0] = gshift_s();
 }
 
 
-
 /* SET_INPUT_MODE: */
-void vdi_vsin_mode(Vwk * vwk)
+void vdi_vsin_mode(Vwk *vwk)
 {
     WORD i;
 
     INTOUT[0] = i = INTIN[1];
     i--;
 
-    switch (INTIN[0]) {
-    case 1:                     /* locator */
+    switch (INTIN[0])
+    {
+    case 1: /* locator */
         loc_mode = i;
         break;
 
-    case 2:                     /* valuator */
+    case 2: /* valuator */
         val_mode = i;
         break;
 
-    case 3:                     /* choice */
+    case 3: /* choice */
         chc_mode = i;
         break;
 
-    case 4:                     /* string */
+    case 4: /* string */
         str_mode = i;
         break;
     }
 }
-
 
 
 /*
@@ -151,30 +153,30 @@ void vdi_vsin_mode(Vwk * vwk)
  * However, like all versions of Atari TOS, it actually returns the mode
  * value minus 1 (i.e. 0 or 1).
  */
-void vdi_vqin_mode(Vwk * vwk)
+void vdi_vqin_mode(Vwk *vwk)
 {
     WORD *int_out;
 
     int_out = INTOUT;
-    switch (INTIN[0]) {
-    case 1:                     /* locator */
+    switch (INTIN[0])
+    {
+    case 1: /* locator */
         *int_out = loc_mode;
         break;
 
-    case 2:                     /* valuator */
+    case 2: /* valuator */
         *int_out = val_mode;
         break;
 
-    case 3:                     /* choice */
+    case 3: /* choice */
         *int_out = chc_mode;
         break;
 
-    case 4:                     /* string */
+    case 4: /* string */
         *int_out = str_mode;
         break;
     }
 }
-
 
 
 /*
@@ -188,7 +190,6 @@ static WORD gshift_s(void)
 }
 
 
-
 /*
  * GCHC_KEY - get choice for choice input
  *
@@ -198,10 +199,9 @@ static WORD gshift_s(void)
  */
 static WORD gchc_key(void)
 {
-    TERM_CH = 1;                /* 16 bit char info */
+    TERM_CH = 1; /* 16 bit char info */
     return TERM_CH;
 }
-
 
 
 /*
@@ -216,11 +216,11 @@ static WORD gchr_key(void)
 {
     ULONG ch;
 
-    if (Bconstat(2)) {                  /* see if a character present at con */
+    if (Bconstat(2))
+    { /* see if a character present at con */
         ch = Bconin(2);
-        TERM_CH = (WORD)
-            (ch >> 8)|                  /* scancode down to bit 8-15 */
-            (ch & 0xff);                /* asciicode to bit 0-7 */
+        TERM_CH = (WORD)(ch >> 8) | /* scancode down to bit 8-15 */
+                  (ch & 0xff);      /* asciicode to bit 0-7 */
         return 1;
     }
     return 0;

@@ -23,44 +23,48 @@
 #include "biosext.h"
 #include "lineavars.h"
 #include "a2560_bios.h"
+
 #if defined(MACHINE_A2560U) || defined(MACHINE_A2560K) || defined(MACHINE_A2560M) || defined(MACHINE_A2560X) || defined(MACHINE_GENX)
-# include "../foenix/vicky2.h"
+#include "../foenix/vicky2.h"
 #endif
+
 #include "vdi_inline.h"
+
 #if WITH_AES
 #include "../aes/aesstub.h"
 #endif
 
-#define MOUSE_WIDTH     16      /* in pixels */
-#define MOUSE_HEIGHT    16
+#define MOUSE_WIDTH 16 /* in pixels */
+#define MOUSE_HEIGHT 16
 
 /* Mouse / sprite structure */
 typedef struct Mcdb_ Mcdb;
-struct Mcdb_ {
-        WORD    xhot;
-        WORD    yhot;
-        WORD    planes;
-        WORD    bg_col;
-        WORD    fg_col;
-        UWORD   maskdata[32];   /* mask & data are interleaved */
+struct Mcdb_
+{
+    WORD xhot;
+    WORD yhot;
+    WORD planes;
+    WORD bg_col;
+    WORD fg_col;
+    UWORD maskdata[32]; /* mask & data are interleaved */
 };
 
 /* mouse related line-A variables in bios/lineavars.S */
-extern void     (*user_but)(void);      /* user button vector */
-extern void     (*user_cur)(void);      /* user cursor vector */
-extern void     (*user_mot)(void);      /* user motion vector */
-extern Mcdb     mouse_cdb;              /* storage for mouse sprite */
+extern void (*user_but)(void); /* user button vector */
+extern void (*user_cur)(void); /* user cursor vector */
+extern void (*user_mot)(void); /* user motion vector */
+extern Mcdb mouse_cdb;         /* storage for mouse sprite */
 
 /* prototypes */
-static void vb_draw(void);             /* user button vector */
+static void vb_draw(void); /* user button vector */
 
 /* prototypes for functions in vdi_asm.S */
-void mouse_int(void);           /* mouse interrupt routine */
-void mov_cur(void);             /* user button vector */
+void mouse_int(void); /* mouse interrupt routine */
+void mov_cur(void);   /* user button vector */
 
 #if CONF_WITH_EXTENDED_MOUSE
-void wheel_int(void);           /* wheel interrupt routine */
-void call_user_but(WORD status);/* call user_but from C */
+void wheel_int(void);                                       /* wheel interrupt routine */
+void call_user_but(WORD status);                            /* call user_but from C */
 void call_user_wheel(WORD wheel_number, WORD wheel_amount); /* call user_wheel from C */
 
 /* pointers to callbacks called from vdi_asm.S */
@@ -109,11 +113,9 @@ static const MFORM arrow_mform = {
         0x0300, /* %0000001100000000 */
         0x0180, /* %0000000110000000 */
         0x0000  /* %0000000000000000 */
-    }
-};
+    }};
 #define default_mform() &arrow_mform
 #endif
-
 
 
 /*
@@ -130,20 +132,19 @@ static const MFORM arrow_mform = {
  */
 static void dis_cur(void)
 {
-    if (HIDE_CNT != 1)      /* if not about to be shown: */
+    if (HIDE_CNT != 1) /* if not about to be shown: */
     {
-        HIDE_CNT--;             /* just decrement hide count */
-        if (HIDE_CNT < 0)       /* but make sure it doesn't go negative! */
+        HIDE_CNT--;       /* just decrement hide count */
+        if (HIDE_CNT < 0) /* but make sure it doesn't go negative! */
             HIDE_CNT = 0;
         return;
     }
 
     /* HIDE_CNT is precisely 1 at this point */
-    cur_display(&mouse_cdb, mcs_ptr, GCURX, GCURY);  /* display the cursor */
-    draw_flag = 0;              /* disable VBL drawing routine */
+    cur_display(&mouse_cdb, mcs_ptr, GCURX, GCURY); /* display the cursor */
+    draw_flag = 0;                                  /* disable VBL drawing routine */
     HIDE_CNT--;
 }
-
 
 
 /*
@@ -165,13 +166,13 @@ static void hide_cur(void)
      * If this is the first one then remove the cursor from the screen.
      * If not then do nothing, because the cursor wasn't on the screen.
      */
-    HIDE_CNT += 1;              /* increment it */
-    if (HIDE_CNT == 1) {        /* if cursor was not hidden... */
-        cur_replace(mcs_ptr);   /* remove the cursor from screen */
-        draw_flag = 0;          /* disable VBL drawing routine */
+    HIDE_CNT += 1; /* increment it */
+    if (HIDE_CNT == 1)
+    {                         /* if cursor was not hidden... */
+        cur_replace(mcs_ptr); /* remove the cursor from screen */
+        draw_flag = 0;        /* disable VBL drawing routine */
     }
 }
-
 
 
 /*
@@ -204,36 +205,38 @@ static WORD gloc_key(void)
     /*
      * check for mouse button or keyboard key
      */
-    if (cur_ms_stat & 0xc0) {           /* some button status bits set? */
-        if (cur_ms_stat & 0x40)         /* if bit 6 set,                     */
-            TERM_CH = 0x20;             /* send terminator code for left key */
+    if (cur_ms_stat & 0xc0)
+    {                           /* some button status bits set? */
+        if (cur_ms_stat & 0x40) /* if bit 6 set,                     */
+            TERM_CH = 0x20;     /* send terminator code for left key */
         else
-            TERM_CH = 0x21;             /* send terminator code for right key */
-        cur_ms_stat &= 0x23;            /* clear mouse button status (bit 6/7) */
-        retval = 1;                     /* set button pressed flag */
-    } else if (Bconstat(2)) {           /* see if a character present at con */
+            TERM_CH = 0x21;  /* send terminator code for right key */
+        cur_ms_stat &= 0x23; /* clear mouse button status (bit 6/7) */
+        retval = 1;          /* set button pressed flag */
+    }
+    else if (Bconstat(2))
+    { /* see if a character present at con */
         ch = Bconin(2);
-        TERM_CH = (WORD)
-                  (ch >> 8)|            /* scancode down to bit 8-15 */
-                  (ch & 0xff);          /* asciicode to bit 0-7 */
-        retval = 1;                     /* set button pressed flag */
+        TERM_CH = (WORD)(ch >> 8) | /* scancode down to bit 8-15 */
+                  (ch & 0xff);      /* asciicode to bit 0-7 */
+        retval = 1;                 /* set button pressed flag */
     }
 
     /*
      * check for mouse movement
      */
-    if (cur_ms_stat & 0x20) {           /* if bit #5 set ... */
-        Point * point = (Point*)PTSIN;
+    if (cur_ms_stat & 0x20)
+    { /* if bit #5 set ... */
+        Point *point = (Point *)PTSIN;
 
-        cur_ms_stat &= ~0x20;   /* clear bit 5 */
-        point->x = GCURX;       /* set X = GCURX */
-        point->y = GCURY;       /* set Y = GCURY */
+        cur_ms_stat &= ~0x20; /* clear bit 5 */
+        point->x = GCURX;     /* set X = GCURX */
+        point->y = GCURY;     /* set Y = GCURY */
         retval += 2;
     }
 
     return retval;
 }
-
 
 
 /*
@@ -281,19 +284,21 @@ static WORD gloc_key(void)
  * 3. For vsm_locator(), the output mouse positions should be the
  *    current positions, not the input positions.
  */
-void vdi_v_locator(Vwk * vwk)
+void vdi_v_locator(Vwk *vwk)
 {
     WORD i;
-    Point * point = (Point*)PTSIN;
+    Point *point = (Point *)PTSIN;
 
     /* Set the initial locator position. */
     GCURX = point->x;
     GCURY = point->y;
 
-    if (loc_mode == 0) {    /* handle request mode (vrq_locator()) */
+    if (loc_mode == 0)
+    { /* handle request mode (vrq_locator()) */
         dis_cur();
         /* loop till button or keyboard event */
-        while (!(gloc_key() & 1)) {
+        while (!(gloc_key() & 1))
+        {
         }
         INTOUT[0] = TERM_CH & 0x00ff;
 
@@ -303,13 +308,17 @@ void vdi_v_locator(Vwk * vwk)
         PTSOUT[0] = point->x;
         PTSOUT[1] = point->y;
         hide_cur();
-    } else {                /* handle sample mode (vsm_locator()) */
+    }
+    else
+    { /* handle sample mode (vsm_locator()) */
         i = gloc_key();
-        if (i & 1) {
+        if (i & 1)
+        {
             CONTRL[4] = 1;
             INTOUT[0] = TERM_CH & 0x00ff;
         }
-        if (i & 2) {
+        if (i & 2)
+        {
             CONTRL[2] = 1;
             PTSOUT[0] = point->x;
             PTSOUT[1] = point->y;
@@ -318,43 +327,39 @@ void vdi_v_locator(Vwk * vwk)
 }
 
 
-
 /*
  * vdi_v_show_c - show cursor
  */
-void vdi_v_show_c(Vwk * vwk)
+void vdi_v_show_c(Vwk *vwk)
 {
     linea_show_mouse();
 }
 
 
-
 /*
  * vdi_v_hide_c - hide cursor
  */
-void vdi_v_hide_c(Vwk * vwk)
+void vdi_v_hide_c(Vwk *vwk)
 {
     linea_hide_mouse();
 }
 
 
-
 /*
  * vdi_vq_mouse - Query mouse position and button status
  */
-void vdi_vq_mouse(Vwk * vwk)
+void vdi_vq_mouse(Vwk *vwk)
 {
     WORD old_sr;
 
-    old_sr = set_sr(0x2700);    /* disable interrupts */
+    old_sr = set_sr(0x2700); /* disable interrupts */
 
     INTOUT[0] = MOUSE_BT;
     PTSOUT[0] = GCURX;
     PTSOUT[1] = GCURY;
 
-    set_sr(old_sr);             /* enable interrupts */
+    set_sr(old_sr); /* enable interrupts */
 }
-
 
 
 /*
@@ -371,12 +376,11 @@ void vdi_vq_mouse(Vwk * vwk)
  * Outputs:
  *    contrl[9], contrl[10] - pointer to old routine
  */
-void vdi_vex_butv(Vwk * vwk)
+void vdi_vex_butv(Vwk *vwk)
 {
-    ULONG_AT(&CONTRL[9]) = (ULONG) user_but;
-    user_but = (PFVOID) ULONG_AT(&CONTRL[7]);
+    ULONG_AT(&CONTRL[9]) = (ULONG)user_but;
+    user_but = (PFVOID)ULONG_AT(&CONTRL[7]);
 }
-
 
 
 /*
@@ -392,12 +396,11 @@ void vdi_vex_butv(Vwk * vwk)
  *  Outputs:
  *     contrl[9], contrl[10] - pointer to old routine
  */
-void vdi_vex_motv(Vwk * vwk)
+void vdi_vex_motv(Vwk *vwk)
 {
-    ULONG_AT(&CONTRL[9]) = (ULONG) user_mot;
-    user_mot = (PFVOID) ULONG_AT(&CONTRL[7]);
+    ULONG_AT(&CONTRL[9]) = (ULONG)user_mot;
+    user_mot = (PFVOID)ULONG_AT(&CONTRL[7]);
 }
-
 
 
 /*
@@ -415,12 +418,11 @@ void vdi_vex_motv(Vwk * vwk)
  *    contrl[9], contrl[10] - pointer to old routine
  *
  */
-void vdi_vex_curv(Vwk * vwk)
+void vdi_vex_curv(Vwk *vwk)
 {
-    ULONG_AT(&CONTRL[9]) = (ULONG) user_cur;
-    user_cur = (PFVOID) ULONG_AT(&CONTRL[7]);
+    ULONG_AT(&CONTRL[9]) = (ULONG)user_cur;
+    user_cur = (PFVOID)ULONG_AT(&CONTRL[7]);
 }
-
 
 
 #if CONF_WITH_EXTENDED_MOUSE
@@ -439,13 +441,12 @@ void vdi_vex_curv(Vwk * vwk)
  *    contrl[9], contrl[10] - pointer to old routine
  *
  */
-void vdi_vex_wheelv(Vwk * vwk)
+void vdi_vex_wheelv(Vwk *vwk)
 {
-    ULONG_AT(&CONTRL[9]) = (ULONG) user_wheel;
-    user_wheel = (PFVOID) ULONG_AT(&CONTRL[7]);
+    ULONG_AT(&CONTRL[9]) = (ULONG)user_wheel;
+    user_wheel = (PFVOID)ULONG_AT(&CONTRL[7]);
 }
 #endif
-
 
 
 /* copies src mouse form to dst mouse sprite, constrains hotspot
@@ -455,11 +456,11 @@ static void set_mouse_form(const MFORM *src, Mcdb *dst)
 {
     int i;
     WORD col;
-    UWORD * gmdt;                /* global mouse definition table */
-    const UWORD * mask;
-    const UWORD * data;
+    UWORD *gmdt; /* global mouse definition table */
+    const UWORD *mask;
+    const UWORD *data;
 
-    mouse_flag += 1;            /* disable updates while redefining cursor */
+    mouse_flag += 1; /* disable updates while redefining cursor */
 
     /* save x-offset of mouse hot spot */
     dst->xhot = src->mf_xhot & 0x000f;
@@ -487,14 +488,15 @@ static void set_mouse_form(const MFORM *src, Mcdb *dst)
     gmdt = dst->maskdata;
     mask = src->mf_mask;
     data = src->mf_data;
-    for (i = 15; i >= 0; i--) {
-        *gmdt++ = *mask++;              /* get next word of mask */
-        *gmdt++ = *data++;              /* get next word of data */
+
+    for (i = 15; i >= 0; i--)
+    {
+        *gmdt++ = *mask++; /* get next word of mask */
+        *gmdt++ = *data++; /* get next word of data */
     }
 
-    mouse_flag -= 1;                    /* re-enable mouse drawing */
+    mouse_flag -= 1; /* re-enable mouse drawing */
 }
-
 
 
 /*
@@ -514,11 +516,10 @@ static void set_mouse_form(const MFORM *src, Mcdb *dst)
  *
  * Outputs:        None
  */
-void vdi_vsc_form(Vwk * vwk)
+void vdi_vsc_form(Vwk *vwk)
 {
     linea_transform_mouse();
 }
-
 
 
 #if CONF_WITH_EXTENDED_MOUSE
@@ -526,11 +527,11 @@ void vdi_vsc_form(Vwk * vwk)
 /*
  * vdi_mousex_handler - Handle additional mouse buttons
  */
-static void vdi_mousex_handler (WORD scancode)
+static void vdi_mousex_handler(WORD scancode)
 {
     WORD old_buttons = MOUSE_BT;
 
-    if (scancode == 0x37)      /* Mouse button 3 press */
+    if (scancode == 0x37) /* Mouse button 3 press */
         MOUSE_BT |= 0x04;
     else if (scancode == 0xb7) /* Mouse button 3 release */
         MOUSE_BT &= ~0x04;
@@ -546,7 +547,7 @@ static void vdi_mousex_handler (WORD scancode)
     if (MOUSE_BT != old_buttons)
         call_user_but(MOUSE_BT);
 
-    if (scancode == 0x59)      /* Wheel up */
+    if (scancode == 0x59) /* Wheel up */
         call_user_wheel(0, -1);
     else if (scancode == 0x5a) /* Wheel down */
         call_user_wheel(0, 1);
@@ -559,7 +560,6 @@ static void vdi_mousex_handler (WORD scancode)
 #endif /* CONF_WITH_EXTENDED_MOUSE */
 
 
-
 /*
  * vdimouse_init - Initializes the mouse (VDI part)
  *
@@ -568,7 +568,8 @@ static void vdi_mousex_handler (WORD scancode)
  */
 void vdimouse_init(void)
 {
-    static const struct {
+    static const struct
+    {
         UBYTE topmode;
         UBYTE buttons;
         UBYTE xparam;
@@ -576,19 +577,20 @@ void vdimouse_init(void)
     } mouse_params = {0, 0, 1, 1};
 
     /* Input must be initialized here and not in init_wk */
-    loc_mode = 0;               /* default is request mode  */
-    val_mode = 0;               /* default is request mode  */
-    chc_mode = 0;               /* default is request mode  */
-    str_mode = 0;               /* default is request mode  */
+    loc_mode = 0; /* default is request mode  */
+    val_mode = 0; /* default is request mode  */
+    chc_mode = 0; /* default is request mode  */
+    str_mode = 0; /* default is request mode  */
 
     /* mouse settings */
-    HIDE_CNT = 1;               /* mouse is initially hidden */
-    GCURX = xres / 2;           /* initialize the mouse to center */
+    HIDE_CNT = 1;     /* mouse is initially hidden */
+    GCURX = xres / 2; /* initialize the mouse to center */
     GCURY = yres / 2;
 
     user_but = just_rts;
     user_mot = just_rts;
-    user_cur = mov_cur;         /* initialize user_cur vector */
+    user_cur = mov_cur; /* initialize user_cur vector */
+
 #if CONF_WITH_EXTENDED_MOUSE
     user_wheel = just_rts;
 #endif
@@ -596,14 +598,14 @@ void vdimouse_init(void)
     /* Move in the default mouse form (presently the arrow) */
     set_mouse_form(default_mform(), &mouse_cdb);
 
-    MOUSE_BT = 0;               /* clear the mouse button state */
-    cur_ms_stat = 0;            /* clear the mouse status */
-    mouse_flag = 0;             /* clear the mouse flag */
-    draw_flag = 0;              /* clear the hide operations counter */
-    newx = 0;                   /* set cursor x-coordinate to 0 */
-    newy = 0;                   /* set cursor y-coordinate to 0 */
+    MOUSE_BT = 0;    /* clear the mouse button state */
+    cur_ms_stat = 0; /* clear the mouse status */
+    mouse_flag = 0;  /* clear the mouse flag */
+    draw_flag = 0;   /* clear the hide operations counter */
+    newx = 0;        /* set cursor x-coordinate to 0 */
+    newy = 0;        /* set cursor y-coordinate to 0 */
 
-    vblqueue[0] = vb_draw;      /* set GEM VBL-routine to the first VBL slot */
+    vblqueue[0] = vb_draw; /* set GEM VBL-routine to the first VBL slot */
 
     /* Initialize mouse via XBIOS in relative mode */
     Initmous(1, (LONG)&mouse_params, (LONG)mouse_int);
@@ -619,7 +621,6 @@ void vdimouse_init(void)
 }
 
 
-
 /*
  * vdimouse_exit - deinitialize/disable mouse
  */
@@ -632,7 +633,7 @@ void vdimouse_exit(void)
     user_wheel = just_rts;
 #endif
 
-    vblqueue[0] = vb_draw;      /* set GEM VBL-routine to the first VBL slot */
+    vblqueue[0] = vb_draw; /* set GEM VBL-routine to the first VBL slot */
 
     /* disable mouse via XBIOS */
     Initmous(0, 0, 0);
@@ -644,7 +645,6 @@ void vdimouse_exit(void)
     }
 #endif
 }
-
 
 
 /*
@@ -677,18 +677,20 @@ static void vb_draw(void)
     if (mouse_flag || HIDE_CNT)
         return;
 
-    old_sr = set_sr(0x2700);        /* disable interrupts */
-    if (draw_flag) {
+    old_sr = set_sr(0x2700); /* disable interrupts */
+
+    if (draw_flag)
+    {
         draw_flag = FALSE;
-        x = newx;                   /* get x/y for cur_display() atomically */
+        x = newx; /* get x/y for cur_display() atomically */
         y = newy;
         set_sr(old_sr);
-        cur_replace(mcs_ptr);       /* remove the old cursor from the screen */
+        cur_replace(mcs_ptr);                   /* remove the old cursor from the screen */
         cur_display(&mouse_cdb, mcs_ptr, x, y); /* display the cursor */
-    } else
+    }
+    else
         set_sr(old_sr);
 }
-
 
 
 #if CONF_WITH_VDI_16BIT
@@ -713,24 +715,34 @@ static void cur_display16(Mcdb *sprite, MCS *mcs, WORD x, WORD y)
      * figure out height, width, and where to start in mask
      */
     mask_start = sprite->maskdata;
-    if (y < 0) {
+    if (y < 0)
+    {
         rows = y + MOUSE_HEIGHT;
         mask_start -= y * sizeof(UWORD);
         y = 0;
-    } else if (y > (yres + 1 - MOUSE_HEIGHT)) {
+    }
+    else if (y > (yres + 1 - MOUSE_HEIGHT))
+    {
         rows = yres + 1 - y;
-    } else {
+    }
+    else
+    {
         rows = MOUSE_HEIGHT;
     }
 
     shift = 0;
-    if (x < 0) {
+    if (x < 0)
+    {
         width = x + MOUSE_WIDTH;
         shift = -x;
         x = 0;
-    } else if (x > (xres + 1 - MOUSE_WIDTH)) {
+    }
+    else if (x > (xres + 1 - MOUSE_WIDTH))
+    {
         width = xres + 1 - x;
-    } else {
+    }
+    else
+    {
         width = MOUSE_WIDTH;
     }
 
@@ -738,17 +750,17 @@ static void cur_display16(Mcdb *sprite, MCS *mcs, WORD x, WORD y)
      * get destination pointer & increment
      */
     dst = get_start_addr16(x, y);
-    dst_inc = v_lin_wr/sizeof(UWORD) - width;
+    dst_inc = v_lin_wr / sizeof(UWORD) - width;
 
     save = (UWORD *)mcs->area;
 
     /*
      *  Store values required by cur_replace()
      */
-    mcs->len = rows;            /* number of cursor rows */
-    mcs->addr = dst;            /* save area: origin of material */
-    mcs->stat |= MCS_VALID;     /* flag the buffer as being loaded */
-    mcs->width = width;         /* number of cursor columns */
+    mcs->len = rows;        /* number of cursor rows */
+    mcs->addr = dst;        /* save area: origin of material */
+    mcs->stat |= MCS_VALID; /* flag the buffer as being loaded */
+    mcs->width = width;     /* number of cursor columns */
 
     /*
      * update screen, saving old contents
@@ -756,23 +768,28 @@ static void cur_display16(Mcdb *sprite, MCS *mcs, WORD x, WORD y)
     palette = CUR_WORK->ext->palette;
     bgcol = palette[sprite->bg_col];
     fgcol = palette[sprite->fg_col];
-    while (rows-- > 0) {
-        bgmask = *mask_start++;     /* set up bg mask */
+
+    while (rows-- > 0)
+    {
+        bgmask = *mask_start++; /* set up bg mask */
         bgmask <<= shift;
-        fgmask = *mask_start++;     /* set up fg mask */
+        fgmask = *mask_start++; /* set up fg mask */
         fgmask <<= shift;
-        for (i = 0; i < width; i++, dst++, bgmask<<=1, fgmask<<=1) {
+
+        for (i = 0; i < width; i++, dst++, bgmask <<= 1, fgmask <<= 1)
+        {
             *save++ = *dst;
+
             if (fgmask & 0x8000)
                 *dst = fgcol;
             else if (bgmask & 0x8000)
                 *dst = bgcol;
         }
+
         dst += dst_inc;
     }
 }
 #endif
-
 
 
 /*
@@ -780,43 +797,48 @@ static void cur_display16(Mcdb *sprite, MCS *mcs, WORD x, WORD y)
  *
  * handles cursor display for cursors that are subject to L/R clipping
  */
-static void cur_display_clip(WORD op,Mcdb *sprite,MCS *mcs,UWORD *mask_start,UWORD shft)
+static void cur_display_clip(WORD op, Mcdb *sprite, MCS *mcs, UWORD *mask_start, UWORD shft)
 {
     WORD dst_inc, plane;
     UWORD cdb_fg, cdb_bg;
-    UWORD cdb_mask;             /* for checking cdb_bg/cdb_fg */
+    UWORD cdb_mask; /* for checking cdb_bg/cdb_fg */
     UWORD *addr, *save;
 
-    dst_inc = v_lin_wr >> 1;    /* calculate number of words in a scan line */
+    dst_inc = v_lin_wr >> 1; /* calculate number of words in a scan line */
 
-    addr = mcs->addr;           /* starting screen address */
-    save = (UWORD *)mcs->area;  /* we save words, not longwords */
+    addr = mcs->addr;          /* starting screen address */
+    save = (UWORD *)mcs->area; /* we save words, not longwords */
 
-    cdb_bg = sprite->bg_col;    /* get mouse background color bits */
-    cdb_fg = sprite->fg_col;    /* get mouse foreground color bits */
+    cdb_bg = sprite->bg_col; /* get mouse background color bits */
+    cdb_fg = sprite->fg_col; /* get mouse foreground color bits */
 
     /* plane controller, draw cursor in each graphic plane */
-    for (plane = v_planes - 1, cdb_mask = 0x0001; plane >= 0; plane--) {
+    for (plane = v_planes - 1, cdb_mask = 0x0001; plane >= 0; plane--)
+    {
         WORD row;
         UWORD *src, *dst;
 
         /* setup the things we need for each plane again */
-        src = mask_start;               /* calculated mask data begin */
-        dst = addr++;                   /* current destination address */
+        src = mask_start; /* calculated mask data begin */
+        dst = addr++;     /* current destination address */
 
         /* loop through rows */
-        for (row = mcs->len - 1; row >= 0; row--) {
-            ULONG bits;                 /* our graphics data */
-            ULONG fg;                   /* the foreground color */
-            ULONG bg;                   /* the background color */
+        for (row = mcs->len - 1; row >= 0; row--)
+        {
+            ULONG bits; /* our graphics data */
+            ULONG fg;   /* the foreground color */
+            ULONG bg;   /* the background color */
 
             /*
              * first, save the existing data
              */
             *save++ = *dst;
-            if (op == 1) {          /* right word only */
-                bits = *dst;            /* dst already at right word */
-            } else {                /* left word only  */
+            if (op == 1)
+            {                /* right word only */
+                bits = *dst; /* dst already at right word */
+            }
+            else
+            {                               /* left word only  */
                 bits = ((ULONG)*dst) << 16; /* move to left posn */
             }
 
@@ -847,19 +869,21 @@ static void cur_display_clip(WORD op,Mcdb *sprite,MCS *mcs,UWORD *mask_start,UWO
             /*
              * update the screen with the new data
              */
-            if (op == 1) {          /* right word only */
+            if (op == 1)
+            { /* right word only */
                 *dst = (UWORD)bits;
-            } else {                /* left word only */
+            }
+            else
+            { /* left word only */
                 *dst = (UWORD)(bits >> 16);
             }
 
-            dst += dst_inc;             /* a1 -> next row of screen */
+            dst += dst_inc; /* a1 -> next row of screen */
         } /* loop through rows */
 
         cdb_mask <<= 1;
     } /* loop through planes */
 }
-
 
 
 /*
@@ -878,40 +902,44 @@ static void cur_display_clip(WORD op,Mcdb *sprite,MCS *mcs,UWORD *mask_start,UWO
  * is subject to left or right clipping, however, then it must lie
  * within one screen word (per plane), so we only save 32 bytes/plane.
  */
-void cur_display (Mcdb *sprite, MCS *mcs, WORD x, WORD y)
+void cur_display(Mcdb *sprite, MCS *mcs, WORD x, WORD y)
 {
     int row_count, plane, inc, op, dst_inc;
-    UWORD * addr, * mask_start;
+    UWORD *addr, *mask_start;
     UWORD shft, cdb_fg, cdb_bg;
-    UWORD cdb_mask;             /* for checking cdb_bg/cdb_fg */
+    UWORD cdb_mask; /* for checking cdb_bg/cdb_fg */
     ULONG *save;
 
 #if CONF_WITH_VDI_16BIT
     /*
      * handle 16-bit VDI in separate function
      */
-    if (TRUECOLOR_MODE) {
+    if (TRUECOLOR_MODE)
+    {
         cur_display16(sprite, mcs, x, y);
         return;
     }
 #endif
 
-    x -= sprite->xhot;          /* x = left side of destination block */
-    y -= sprite->yhot;          /* y = top of destination block */
+    x -= sprite->xhot; /* x = left side of destination block */
+    y -= sprite->yhot; /* y = top of destination block */
 
-    mcs->stat = 0x00;           /* reset status of save buffer */
+    mcs->stat = 0x00; /* reset status of save buffer */
 
     /*
      * clip x axis
      */
-    if (x < 0) {            /* clip left */
-        x += 16;                /* get address of right word */
-        op = 1;                 /* remember we're clipping left */
+    if (x < 0)
+    {            /* clip left */
+        x += 16; /* get address of right word */
+        op = 1;  /* remember we're clipping left */
     }
-    else if (x >= (xres-15)) {  /* clip right */
-        op = 2;                 /* remember we're clipping right */
+    else if (x >= (xres - 15))
+    {           /* clip right */
+        op = 2; /* remember we're clipping right */
     }
-    else {                  /* no clipping */
+    else
+    {                           /* no clipping */
         op = 0;                 /* longword save */
         mcs->stat |= MCS_LONGS; /* mark savearea as longword save */
     }
@@ -919,16 +947,19 @@ void cur_display (Mcdb *sprite, MCS *mcs, WORD x, WORD y)
     /*
      * clip y axis
      */
-    mask_start = sprite->maskdata;  /* MASK/DATA for cursor */
-    if (y < 0) {            /* clip top */
+    mask_start = sprite->maskdata; /* MASK/DATA for cursor */
+    if (y < 0)
+    { /* clip top */
         row_count = y + 16;
-        mask_start -= y << 1;   /* point to first visible row of MASK/FORM */
-        y = 0;                  /* and reset starting row */
+        mask_start -= y << 1; /* point to first visible row of MASK/FORM */
+        y = 0;                /* and reset starting row */
     }
-    else if (y > (yres-15)) {   /* clip bottom */
+    else if (y > (yres - 15))
+    { /* clip bottom */
         row_count = yres - y + 1;
     }
-    else {
+    else
+    {
         row_count = 16;
     }
 
@@ -937,49 +968,52 @@ void cur_display (Mcdb *sprite, MCS *mcs, WORD x, WORD y)
      *  these bits from the x-coordinate.
      */
     addr = get_start_addr(x, y);
-    shft = 16 - (x&0x0f);       /* amount to shift forms by */
+    shft = 16 - (x & 0x0f); /* amount to shift forms by */
 
     /*
      *  Store values required by cur_replace()
      */
-    mcs->len = row_count;       /* number of cursor rows */
-    mcs->addr = addr;           /* save area: origin of material */
-    mcs->stat |= MCS_VALID;     /* flag the buffer as being loaded */
+    mcs->len = row_count;   /* number of cursor rows */
+    mcs->addr = addr;       /* save area: origin of material */
+    mcs->stat |= MCS_VALID; /* flag the buffer as being loaded */
 
     /*
      *  To allow performance optimisations in this function, we handle
      *  L/R clipping in a separate function
      */
-    if (op) {
-        cur_display_clip(op,sprite,mcs,mask_start,shft);
+    if (op)
+    {
+        cur_display_clip(op, sprite, mcs, mask_start, shft);
         return;
     }
 
     /*
      * The rest of this function handles the no-L/R clipping case
      */
-    inc = v_planes;             /* # distance to next word in same plane */
-    dst_inc = v_lin_wr >> 1;    /* calculate number of words in a scan line */
+    inc = v_planes;          /* # distance to next word in same plane */
+    dst_inc = v_lin_wr >> 1; /* calculate number of words in a scan line */
 
-    save = mcs->area;           /* for long stores */
+    save = mcs->area; /* for long stores */
 
-    cdb_bg = sprite->bg_col;    /* get mouse background color bits */
-    cdb_fg = sprite->fg_col;    /* get mouse foreground color bits */
+    cdb_bg = sprite->bg_col; /* get mouse background color bits */
+    cdb_fg = sprite->fg_col; /* get mouse foreground color bits */
 
     /* plane controller, draw cursor in each graphic plane */
-    for (plane = v_planes - 1, cdb_mask = 0x0001; plane >= 0; plane--) {
+    for (plane = v_planes - 1, cdb_mask = 0x0001; plane >= 0; plane--)
+    {
         int row;
-        UWORD * src, * dst;
+        UWORD *src, *dst;
 
         /* setup the things we need for each plane again */
-        src = mask_start;               /* calculated mask data begin */
-        dst = addr++;                   /* current destination address */
+        src = mask_start; /* calculated mask data begin */
+        dst = addr++;     /* current destination address */
 
         /* loop through rows */
-        for (row = row_count - 1; row >= 0; row--) {
-            ULONG bits;                 /* our graphics data */
-            ULONG fg;                   /* the foreground color */
-            ULONG bg;                   /* the background color */
+        for (row = row_count - 1; row >= 0; row--)
+        {
+            ULONG bits; /* our graphics data */
+            ULONG fg;   /* the foreground color */
+            ULONG bg;   /* the background color */
 
             /*
              * first, save the existing data
@@ -1018,13 +1052,12 @@ void cur_display (Mcdb *sprite, MCS *mcs, WORD x, WORD y)
              */
             *dst = (UWORD)(bits >> 16);
             *(dst + inc) = (UWORD)bits;
-            dst += dst_inc;             /* next row of screen */
+            dst += dst_inc; /* next row of screen */
         } /* loop through rows */
 
         cdb_mask <<= 1;
     } /* loop through planes */
 }
-
 
 
 #if CONF_WITH_VDI_16BIT
@@ -1038,22 +1071,23 @@ static void cur_replace16(MCS *mcs)
     UWORD *addr, *dst, *src;
     UWORD row, col;
 
-    if (!(mcs->stat & MCS_VALID))   /* does save area contain valid data ? */
+    if (!(mcs->stat & MCS_VALID)) /* does save area contain valid data ? */
         return;
-    mcs->stat &= ~MCS_VALID;        /* yes but (like TOS) don't allow reuse */
+    mcs->stat &= ~MCS_VALID; /* yes but (like TOS) don't allow reuse */
 
-    addr = mcs->addr;               /* starting screen address */
+    addr = mcs->addr; /* starting screen address */
     src = (UWORD *)mcs->area;
 
-    for (row = mcs->len, dst = addr; row > 0; row--, dst = addr) {
-        for (col = mcs->width; col > 0; col--) {
+    for (row = mcs->len, dst = addr; row > 0; row--, dst = addr)
+    {
+        for (col = mcs->width; col > 0; col--)
+        {
             *dst++ = *src++;
         }
         addr += v_lin_wr >> 1;
     }
 }
 #endif
-
 
 
 /*
@@ -1067,26 +1101,27 @@ static void cur_replace16(MCS *mcs)
  *      v_planes    number of planes in destination
  *      v_lin_wr    line wrap (byte width of form)
  */
-void cur_replace (MCS *mcs)
+void cur_replace(MCS *mcs)
 {
     WORD plane, row;
     UWORD *addr, *src, *dst;
-    const WORD inc = v_planes;      /* # words to next word in same plane */
+    const WORD inc = v_planes;          /* # words to next word in same plane */
     const WORD dst_inc = v_lin_wr >> 1; /* # words in a scan line */
 
 #if CONF_WITH_VDI_16BIT
     /*
      * handle 16-bit VDI in separate function
      */
-    if (TRUECOLOR_MODE) {
+    if (TRUECOLOR_MODE)
+    {
         cur_replace16(mcs);
         return;
     }
 #endif
 
-    if (!(mcs->stat & MCS_VALID))   /* does save area contain valid data ? */
+    if (!(mcs->stat & MCS_VALID)) /* does save area contain valid data ? */
         return;
-    mcs->stat &= ~MCS_VALID;        /* yes but (like TOS) don't allow reuse */
+    mcs->stat &= ~MCS_VALID; /* yes but (like TOS) don't allow reuse */
 
     addr = mcs->addr;
     src = (UWORD *)mcs->area;
@@ -1094,15 +1129,18 @@ void cur_replace (MCS *mcs)
     /*
      * handle longword data
      */
-    if (mcs->stat & MCS_LONGS) {
+    if (mcs->stat & MCS_LONGS)
+    {
         /* plane controller, draw cursor in each graphic plane */
-        for (plane = v_planes - 1; plane >= 0; plane--) {
-            dst = addr++;           /* current destination address */
+        for (plane = v_planes - 1; plane >= 0; plane--)
+        {
+            dst = addr++; /* current destination address */
             /* loop through rows */
-            for (row = mcs->len - 1; row >= 0; row--) {
+            for (row = mcs->len - 1; row >= 0; row--)
+            {
                 *dst = *src++;
                 *(dst + inc) = *src++;
-                dst += dst_inc;     /* next row of screen */
+                dst += dst_inc; /* next row of screen */
             }
         }
         return;
@@ -1113,12 +1151,14 @@ void cur_replace (MCS *mcs)
      */
 
     /* plane controller, draw cursor in each graphic plane */
-    for (plane = v_planes - 1; plane >= 0; plane--) {
-        dst = addr++;               /* current destination address */
+    for (plane = v_planes - 1; plane >= 0; plane--)
+    {
+        dst = addr++; /* current destination address */
         /* loop through rows */
-        for (row = mcs->len - 1; row >= 0; row--) {
+        for (row = mcs->len - 1; row >= 0; row--)
+        {
             *dst = *src++;
-            dst += dst_inc;         /* next row of screen */
+            dst += dst_inc; /* next row of screen */
         }
     }
 }
@@ -1129,15 +1169,17 @@ void cur_replace (MCS *mcs)
 void linea_show_mouse(void)
 {
     if (!INTIN[0] && HIDE_CNT)
-        HIDE_CNT = 1;           /* reset cursor to on */
+        HIDE_CNT = 1; /* reset cursor to on */
 
     dis_cur();
 }
+
 
 void linea_hide_mouse(void)
 {
     hide_cur();
 }
+
 
 void linea_transform_mouse(void)
 {

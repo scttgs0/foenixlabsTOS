@@ -8,55 +8,52 @@
  * option any later version.  See doc/license.txt for details.
  */
 
-#ifndef VDIDEFS_H
-#define VDIDEFS_H
+#pragma once
 
 #include "fonthdr.h"
 #include "aesext.h"
 #include "vdiext.h"
 
-#define HAVE_BEZIER 0           /* switch on bezier capability - entirely untested */
+#define HAVE_BEZIER 0 /* switch on bezier capability - entirely untested */
 
 #define EXTENDED_PALETTE (CONF_WITH_VIDEL || CONF_WITH_TT_SHIFTER)
 
-#define TRUECOLOR_MODE  (v_planes > 8)
-
+#define TRUECOLOR_MODE (v_planes > 8)
 
 #if CONF_WITH_VIDEL
-# define UDPAT_PLANES   32      /* actually 16, but each plane occupies 2 WORDs */
+#define UDPAT_PLANES 32 /* actually 16, but each plane occupies 2 WORDs */
 #elif CONF_WITH_TT_SHIFTER
-# define UDPAT_PLANES   8
+#define UDPAT_PLANES 8
 #else
-# define UDPAT_PLANES   4
+#define UDPAT_PLANES 4
 #endif
 
 /*
  * some VDI opcodes
  */
-#define V_OPNWK_OP      1
-#define V_CLSWK_OP      2
-#define V_OPNVWK_OP     100
-#define V_CLSVWK_OP     101
-
+#define V_OPNWK_OP 1
+#define V_CLSWK_OP 2
+#define V_OPNVWK_OP 100
+#define V_CLSVWK_OP 101
 
 /*
  * some minima and maxima
  */
-#define MIN_LINE_STYLE  1       /* for vsl_type() */
-#define MAX_LINE_STYLE  7
-#define DEF_LINE_STYLE  1
+#define MIN_LINE_STYLE 1 /* for vsl_type() */
+#define MAX_LINE_STYLE 7
+#define DEF_LINE_STYLE 1
 
-#define MIN_END_STYLE   SQUARED /* for vsl_ends() */
-#define MAX_END_STYLE   ROUND
-#define DEF_END_STYLE   SQUARED
+#define MIN_END_STYLE SQUARED /* for vsl_ends() */
+#define MAX_END_STYLE ROUND
+#define DEF_END_STYLE SQUARED
 
-#define MAX_LINE_WIDTH  40
+#define MAX_LINE_WIDTH 40
 
-#define MIN_MARK_STYLE  1       /* for vsm_type() */
-#define MAX_MARK_STYLE  6
-#define DEF_MARK_STYLE  3
+#define MIN_MARK_STYLE 1 /* for vsm_type() */
+#define MAX_MARK_STYLE 6
+#define DEF_MARK_STYLE 3
 
-#define MIN_FILL_STYLE  0       /* for vsf_interior() */
+#define MIN_FILL_STYLE  0 /* for vsf_interior() */
 #define FIS_HOLLOW      0
 #define FIS_SOLID       1
 #define FIS_PATTERN     2
@@ -65,15 +62,15 @@
 #define MAX_FILL_STYLE  4
 #define DEF_FILL_STYLE  FIS_HOLLOW
 
-#define MIN_FILL_HATCH  1       /* for vsf_style() when fill style is hatch */
-#define MAX_FILL_HATCH  12
-#define DEF_FILL_HATCH  1
+#define MIN_FILL_HATCH 1 /* for vsf_style() when fill style is hatch */
+#define MAX_FILL_HATCH 12
+#define DEF_FILL_HATCH 1
 
-#define MIN_FILL_PATTERN 1      /* for vsf_style() when fill style is pattern */
+#define MIN_FILL_PATTERN 1 /* for vsf_style() when fill style is pattern */
 #define MAX_FILL_PATTERN 24
 #define DEF_FILL_PATTERN 1
 
-#define MIN_WRT_MODE    1       /* for vswr_mode() */
+#define MIN_WRT_MODE    1 /* for vswr_mode() */
 #define MD_REPLACE      1
 #define MD_TRANS        2
 #define MD_XOR          3
@@ -81,14 +78,13 @@
 #define MAX_WRT_MODE    4
 #define DEF_WRT_MODE    MD_REPLACE
 
-#define MIN_ARC_CT      32      /* min # of points to use when drawing circle/ellipse */
-#define MAX_ARC_CT      128     /* max # of points ... (must not exceed MAX_VERTICES) */
-
+#define MIN_ARC_CT 32  /* min # of points to use when drawing circle/ellipse */
+#define MAX_ARC_CT 128 /* max # of points ... (must not exceed MAX_VERTICES) */
 
 /* line ending types */
-#define SQUARED     0
-#define ARROWED     1
-#define ROUND       2
+#define SQUARED 0
+#define ARROWED 1
+#define ROUND   2
 
 /* aliases for different table positions */
 #define xres        DEV_TAB[0]
@@ -123,38 +119,39 @@
 #define F_SHADOW    32
 
 /* thickness of outline (documentation only, relies on assembler code in vdi_tblit.S) */
-#define OUTLINE_THICKNESS   1
+#define OUTLINE_THICKNESS 1
 
 /*
  * Small subset of Vwk data, used by draw_rect_common to hide VDI/Line-A
  * specific details from rectangle & polygon drawing.
  */
-typedef struct {
-    WORD clip;                  /* polygon clipping on/off */
-    WORD multifill;             /* Multi-plane fill flag   */
-    UWORD patmsk;               /* Current pattern mask    */
-    const UWORD *patptr;        /* Current pattern pointer */
-    WORD wrt_mode;              /* Current writing mode    */
-    UWORD color;                /* fill color */
+typedef struct
+{
+    WORD clip;           /* polygon clipping on/off */
+    WORD multifill;      /* Multi-plane fill flag   */
+    UWORD patmsk;        /* Current pattern mask    */
+    const UWORD *patptr; /* Current pattern pointer */
+    WORD wrt_mode;       /* Current writing mode    */
+    UWORD color;         /* fill color */
 } VwkAttrib;
 
-
 /* type that can be cast from clipping part of Wvk */
-typedef struct {
-    WORD xmn_clip;              /* Low x point of clipping rectangle    */
-    WORD xmx_clip;              /* High x point of clipping rectangle   */
-    WORD ymn_clip;              /* Low y point of clipping rectangle    */
-    WORD ymx_clip;              /* High y point of clipping rectangle   */
+typedef struct
+{
+    WORD xmn_clip; /* Low x point of clipping rectangle    */
+    WORD xmx_clip; /* High x point of clipping rectangle   */
+    WORD ymn_clip; /* Low y point of clipping rectangle    */
+    WORD ymx_clip; /* High y point of clipping rectangle   */
 } VwkClip;
 
-#define VDI_CLIP(wvk) ((VwkClip*)(&(wvk->xmn_clip)))
-
+#define VDI_CLIP(wvk) ((VwkClip *)(&(wvk->xmn_clip)))
 
 #if CONF_WITH_VDI_16BIT
 /* virtual workstation extension, used for VDI Trucolor (16-bit) support */
-typedef struct {
-    UWORD palette[256];         /* pseudo-palette with pixel value RRRRRGGGGG0BBBBB */
-    WORD req_col[256][3];       /* requested colour */
+typedef struct
+{
+    UWORD palette[256];   /* pseudo-palette with pixel value RRRRRGGGGG0BBBBB */
+    WORD req_col[256][3]; /* requested colour */
 } VwkExt;
 #endif
 
@@ -168,77 +165,78 @@ typedef struct {
  * WORD array whose last element contains the fill colour.
  */
 typedef struct Vwk_ Vwk;
-struct Vwk_ {
-    WORD chup;                  /* Character Up vector */
-    WORD clip;                  /* Clipping Flag */
-    const Fonthead *cur_font;   /* Pointer to current font */
-    UWORD dda_inc;              /* Fraction to be added to the DDA */
-    WORD multifill;             /* Multi-plane fill flag */
-    UWORD patmsk;               /* Current pattern mask */
-    UWORD *patptr;              /* Current pattern pointer */
-    WORD pts_mode;              /* TRUE if height set in points mode */
-    WORD *scrtchp;              /* Pointer to text scratch buffer */
-    WORD scrpt2;                /* Offset to large text buffer */
-    WORD style;                 /* Current text style */
-    WORD t_sclsts;              /* TRUE if scaling up */
-    WORD fill_color;            /* Current fill color (PEL value): see NOTE 1 above */
-    WORD fill_index;            /* Current fill index */
-    WORD fill_per;              /* TRUE if fill area outlined */
-    WORD fill_style;            /* Current fill style */
-    WORD h_align;               /* Current text horizontal alignment */
-    WORD handle;                /* The handle this attribute area is for */
-    WORD line_beg;              /* Beginning line endstyle */
-    WORD line_color;            /* Current line color (PEL value) */
-    WORD line_end;              /* Ending line endstyle */
-    WORD line_index;            /* Current line style */
-    WORD line_width;            /* Current line width */
-    const Fonthead *loaded_fonts; /* Pointer to first loaded font */
-    WORD mark_color;            /* Current marker color (PEL value)     */
-    WORD mark_height;           /* Current marker height        */
-    WORD mark_index;            /* Current marker style         */
-    WORD mark_scale;            /* Current scale factor for marker data */
-    Vwk *next_work;             /* Pointer to next virtual workstation  */
-    WORD num_fonts;             /* Total number of faces available  */
-    WORD scaled;                /* TRUE if font scaled in any way   */
-    Fonthead scratch_head;      /* Holder for the doubled font data */
-    WORD text_color;            /* Current text color (PEL value)   */
-    WORD ud_ls;                 /* User defined linestyle       */
-    WORD ud_patrn[UDPAT_PLANES*16]; /* User defined pattern             */
-    WORD v_align;               /* Current text vertical alignment  */
-    WORD wrt_mode;              /* Current writing mode         */
-    WORD xfm_mode;              /* Transformation mode requested (NDC) */
-    WORD xmn_clip;              /* Low x point of clipping rectangle    */
-    WORD xmx_clip;              /* High x point of clipping rectangle   */
-    WORD ymn_clip;              /* Low y point of clipping rectangle    */
-    WORD ymx_clip;              /* High y point of clipping rectangle   */
+struct Vwk_
+{
+    WORD chup;                        /* Character Up vector */
+    WORD clip;                        /* Clipping Flag */
+    const Fonthead *cur_font;         /* Pointer to current font */
+    UWORD dda_inc;                    /* Fraction to be added to the DDA */
+    WORD multifill;                   /* Multi-plane fill flag */
+    UWORD patmsk;                     /* Current pattern mask */
+    UWORD *patptr;                    /* Current pattern pointer */
+    WORD pts_mode;                    /* TRUE if height set in points mode */
+    WORD *scrtchp;                    /* Pointer to text scratch buffer */
+    WORD scrpt2;                      /* Offset to large text buffer */
+    WORD style;                       /* Current text style */
+    WORD t_sclsts;                    /* TRUE if scaling up */
+    WORD fill_color;                  /* Current fill color (PEL value): see NOTE 1 above */
+    WORD fill_index;                  /* Current fill index */
+    WORD fill_per;                    /* TRUE if fill area outlined */
+    WORD fill_style;                  /* Current fill style */
+    WORD h_align;                     /* Current text horizontal alignment */
+    WORD handle;                      /* The handle this attribute area is for */
+    WORD line_beg;                    /* Beginning line endstyle */
+    WORD line_color;                  /* Current line color (PEL value) */
+    WORD line_end;                    /* Ending line endstyle */
+    WORD line_index;                  /* Current line style */
+    WORD line_width;                  /* Current line width */
+    const Fonthead *loaded_fonts;     /* Pointer to first loaded font */
+    WORD mark_color;                  /* Current marker color (PEL value)     */
+    WORD mark_height;                 /* Current marker height        */
+    WORD mark_index;                  /* Current marker style         */
+    WORD mark_scale;                  /* Current scale factor for marker data */
+    Vwk *next_work;                   /* Pointer to next virtual workstation  */
+    WORD num_fonts;                   /* Total number of faces available  */
+    WORD scaled;                      /* TRUE if font scaled in any way   */
+    Fonthead scratch_head;            /* Holder for the doubled font data */
+    WORD text_color;                  /* Current text color (PEL value)   */
+    WORD ud_ls;                       /* User defined linestyle       */
+    WORD ud_patrn[UDPAT_PLANES * 16]; /* User defined pattern             */
+    WORD v_align;                     /* Current text vertical alignment  */
+    WORD wrt_mode;                    /* Current writing mode         */
+    WORD xfm_mode;                    /* Transformation mode requested (NDC) */
+    WORD xmn_clip;                    /* Low x point of clipping rectangle    */
+    WORD xmx_clip;                    /* High x point of clipping rectangle   */
+    WORD ymn_clip;                    /* Low y point of clipping rectangle    */
+    WORD ymx_clip;                    /* High y point of clipping rectangle   */
 #if CONF_WITH_VDI_16BIT
-    VwkExt *ext;                /* 16 bit colour management */
+    VwkExt *ext; /* 16 bit colour management */
 #endif
     /* newly added */
 #if HAVE_BEZIER
-    WORD bez_qual;              /* actual quality for bezier curves */
+    WORD bez_qual; /* actual quality for bezier curves */
 #endif
 };
 
 /*
  * the following values are used for 'wrt_mode' in the Vwk structure above
  */
-#define WM_REPLACE      (MD_REPLACE-1)
-#define WM_TRANS        (MD_TRANS-1)
-#define WM_XOR          (MD_XOR-1)
-#define WM_ERASE        (MD_ERASE-1)
+#define WM_REPLACE  (MD_REPLACE - 1)
+#define WM_TRANS    (MD_TRANS - 1)
+#define WM_XOR      (MD_XOR - 1)
+#define WM_ERASE    (MD_ERASE - 1)
 
-
-typedef struct {
-    WORD x1,y1;
-    WORD x2,y2;
+typedef struct
+{
+    WORD x1, y1;
+    WORD x2, y2;
 } Rect;
 
-typedef struct {
-    WORD x1,y1;
-    WORD x2,y2;
+typedef struct
+{
+    WORD x1, y1;
+    WORD x2, y2;
 } Line;
-
 
 /*
  * the following line-A variables contain the VDI color palette entries.
@@ -247,13 +245,12 @@ typedef struct {
  * location of req_col2 is not documented by Atari, but is derived from
  * disassembly of TOS ROMs, and source code for MagiC's VDI.
  */
-extern WORD REQ_COL[16][3];     /* defined in lineavars.S */
-extern WORD req_col2[240][3];   /* defined in lineavars.S */
-
+extern WORD REQ_COL[16][3];   /* defined in lineavars.S */
+extern WORD req_col2[240][3]; /* defined in lineavars.S */
 
 /* External definitions for internal use */
-extern WORD flip_y;             /* True if magnitudes being returned */
-extern WORD line_cw;            /* Linewidth for current circle */
+extern WORD flip_y;  /* True if magnitudes being returned */
+extern WORD line_cw; /* Linewidth for current circle */
 extern WORD num_qc_lines;
 extern WORD val_mode, chc_mode, loc_mode, str_mode;
 
@@ -263,8 +260,8 @@ extern const UWORD ROM_UD_PATRN[];
 extern const UWORD SOLID;
 extern const UWORD HOLLOW;
 
-extern WORD SIZ_TAB[];          /* initial ptsout array for open workstation */
-extern WORD INQ_TAB[];          /* extended inquire values */
+extern WORD SIZ_TAB[]; /* initial ptsout array for open workstation */
+extern WORD INQ_TAB[]; /* extended inquire values */
 
 extern WORD *CONTRL, *INTIN, *PTSIN, *INTOUT, *PTSOUT;
 
@@ -282,22 +279,20 @@ extern Vwk *CUR_WORK;           /* pointer to currently-open virtual workstation
 extern WORD (*SEEDABORT)(void); /* ptr to function called to signal early abort */
 
 /* Mouse specific externals */
-extern WORD GCURX;              /* mouse X position */
-extern WORD GCURY;              /* mouse Y position */
-extern WORD HIDE_CNT;           /* Number of levels the mouse is hidden */
+extern WORD GCURX;    /* mouse X position */
+extern WORD GCURY;    /* mouse Y position */
+extern WORD HIDE_CNT; /* Number of levels the mouse is hidden */
 
 /* Mouse related variables */
-extern WORD     newx;           /* new mouse x&y position */
-extern WORD     newy;           /* new mouse x&y position */
-extern UBYTE    draw_flag;      /* non-zero means draw mouse form on vblank */
-extern UBYTE    mouse_flag;     /* non-zero while mouse cursor is being modified */
-extern UBYTE    cur_ms_stat;    /* current mouse status */
-
+extern WORD newx;         /* new mouse x&y position */
+extern WORD newy;         /* new mouse x&y position */
+extern UBYTE draw_flag;   /* non-zero means draw mouse form on vblank */
+extern UBYTE mouse_flag;  /* non-zero while mouse cursor is being modified */
+extern UBYTE cur_ms_stat; /* current mouse status */
 
 BOOL clip_line(Vwk *vwk, Line *line);
 void arb_corner(Rect *rect);
 void arb_line(Line *line);
-
 
 /* C Support routines */
 Vwk *get_vwk_by_handle(WORD);
@@ -320,7 +315,7 @@ void wideline(Vwk *vwk, Point *point, int count);
 void Vwk2Attrib(const Vwk *vwk, VwkAttrib *attr, const UWORD color);
 void draw_rect_common(const VwkAttrib *attr, const Rect *rect);
 void clc_flit(const VwkAttrib *attr, const VwkClip *clipper, const Point *point, WORD vectors, WORD start, WORD end);
-void abline (const Line *line, const WORD wrt_mode, UWORD color);
+void abline(const Line *line, const WORD wrt_mode, UWORD color);
 void contourfill(const VwkAttrib *attr, const VwkClip *clip);
 
 /* initialization of subsystems */
@@ -382,7 +377,6 @@ void vdi_vqf_attributes(Vwk *);     /* 37 */
 void vdi_vqt_attributes(Vwk *);     /* 38 */
 void vdi_vst_alignment(Vwk *);      /* 39 */
 
-
 void vdi_v_opnvwk(Vwk *);           /* 100 */
 
 void vdi_v_clsvwk(Vwk *);           /* 101 */
@@ -438,5 +432,3 @@ void v_bez_control(Vwk *);
 void v_bez(Vwk *vwk, Point *points, int count);
 void v_bez_fill(Vwk *vwk, Point *points, int count);
 #endif
-
-#endif                          /* VDIDEF_H */
