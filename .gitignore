@@ -31,3 +31,13 @@
 /local.mk
 /dsm.txt
 /tests/*/*.tos
+.vs
+*.o
+*.a
+bdos/logo.c
+bdos/logo.h
+logo_compressor
+*.log
+
+# GCC dependency files
+*.d

@@ -21,6 +21,7 @@
 #include "serport.h"
 #include "processor.h"
 #include "delay.h"
+#include "a2560_bios.h"
 #include "coldfire.h" /* For cookie jar info. */
 
 /*
@@ -63,6 +64,16 @@ void init_delay(void)
     */
 
     loopcount_1_msec = 133UL * 1000;
+
+#elif defined(MACHINE_A2560U)
+    /* The A2560U's 68EC000 is running at 20MHz while LOOPS_68000 is for 16MHz*/
+    loopcount_1_msec = LOOPS_68000 * 5L / 4;
+#elif defined(MACHINE_A2560K) || defined(MACHINE_A2560X)
+    /* The A2560X's 68040V is running at 33MHz while LOOPS_68030 is for 32MHz*/
+    loopcount_1_msec = LOOPS_68030 * 33L / 32;
+#elif defined(MACHINE_A2560M)
+    /* The A2560M 68LC060 is running at 33MHz, LOOPS_68060 assumes 110Mhz */
+    loopcount_1_msec = LOOPS_68060 * 33L / 110;
 #else
 # if CONF_WITH_APOLLO_68080
     if (is_apollo_68080)
@@ -98,7 +109,9 @@ void init_delay(void)
  */
 void calibrate_delay(void)
 {
-#if CONF_WITH_MFP
+#if defined(MACHINE_A2560U) || defined(MACHINE_A2560K) || defined(MACHINE_A2560M) || defined(MACHINE_A2560X) || defined(MACHINE_GENX)
+    loopcount_1_msec = a2560_delay_calibrate(CALIBRATION_TIME * loopcount_1_msec);
+#elif CONF_WITH_MFP
     ULONG loopcount, intcount;
 
     /*

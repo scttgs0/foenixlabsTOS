@@ -17,6 +17,22 @@
 #ifndef _SCANCODE_H
 #define _SCANCODE_H
 
+/* Raw scancodes */
+#if defined(MACHINE_A2560U) || defined(MACHINE_A2560K) || defined(MACHINE_A2560M) || defined(MACHINE_A2560X) || defined(MACHINE_GENX)
+# define KEY_UPARROW 0x67
+# define KEY_LTARROW 0x69
+# define KEY_RTARROW 0x6a
+# define KEY_DNARROW 0x6c
+# define KEY_DELETE  0x6f
+# define KEY_INSERT  0x6e
+# define KEY_HOME    0x66
+/* PS/2 specific */
+# define KEY_RCTRL   0x61
+# define KEY_ALTGR   0x64
+# define KEY_PAGEUP  0x68
+# define KEY_HELP    0x57 /* F11 */
+#endif
+
 #define ESCAPE              0x011b
 #define BACKSPACE           0x0e08
 #define TAB                 0x0f09
@@ -24,6 +40,7 @@
 #define DELETE              0x537f
 #define UNDO                0x6100
 #define ENTER               0x720d
+
 
 /*
  * arrow keys

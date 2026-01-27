@@ -22,9 +22,19 @@
 #include "spi.h"
 #include "string.h"
 #include "tosvars.h"
+#include "a2560_bios.h"
 #include "coldfire.h"
 
+#include "../foenix/regutils.h"
+
 #if CONF_WITH_SDMMC
+
+/* Max number of SD Card readers connected to the system */
+#if defined(MACHINE_A2560M)
+#define MAX_SD_CARDS 2
+#else
+#define MAX_SD_CARDS 1
+#endif
 
 /*
  *  SD card commands
@@ -117,7 +127,7 @@ struct cardinfo {
 /*
  *  globals
  */
-static struct cardinfo card;
+static struct cardinfo cards[MAX_SD_CARDS];
 static UBYTE response[5];
 
 /*
@@ -139,6 +149,11 @@ static int sd_wait_for_not_idle(UBYTE cmd,ULONG arg);
 static int sd_wait_for_ready(LONG timeout);
 static LONG sd_write(UWORD drv,ULONG sector,UWORD count,UBYTE *buf);
 
+
+#if defined(MACHINE_A2560M)
+#define LED_ON a2560_sdc1_led(true)
+#define LED_OFF a2560_sdc1_led(false)
+#endif
 
 /*
  *  initialise sd/mmc bus

@@ -274,6 +274,27 @@ release-m548x-bas:
 	cd $(RELEASE_DIR) && zip -9 -r $(RELEASE_M548X_BAS).zip $(RELEASE_M548X_BAS)
 	rm -r $(RELEASE_DIR)/$(RELEASE_M548X_BAS)
 
+.PHONY: release-foenixlabs-rom
+NODEP += release-foenixlabs-rom
+RELEASE_FOENIXLABS_ROM = emutos-foenixlabs-$(VERSION)
+release-foenixlabs-rom:
+	$(MAKE) clean
+	$(MAKE) foenixlabs
+	mkdir $(RELEASE_DIR)/$(RELEASE_FOENIXLABS_ROM)
+	cp etos256*.img $(RELEASE_DIR)/$(RELEASE_FOENIXLABS_ROM)
+	cp desk/icon.def $(RELEASE_DIR)/$(RELEASE_FOENIXLABS_ROM)/emuicon.def
+	cp desk/icon.rsc $(RELEASE_DIR)/$(RELEASE_FOENIXLABS_ROM)/emuicon.rsc
+	cat doc/readme-256k.txt readme.txt >$(RELEASE_DIR)/$(RELEASE_FOENIXLABS_ROM)/readme.txt
+	mkdir $(RELEASE_DIR)/$(RELEASE_FOENIXLABS_ROM)/doc
+	cp $(DOCFILES) $(RELEASE_DIR)/$(RELEASE_FOENIXLABS_ROM)/doc
+	mkdir $(RELEASE_DIR)/$(RELEASE_FOENIXLABS_ROM)/extras
+	cp $(EXTRAFILES) $(RELEASE_DIR)/$(RELEASE_FOENIXLABS_ROM)/extras
+	cp aes/mform.def $(RELEASE_DIR)/$(RELEASE_FOENIXLABS_ROM)/extras/emucurs.def
+	cp aes/mform.rsc $(RELEASE_DIR)/$(RELEASE_FOENIXLABS_ROM)/extras/emucurs.rsc
+	find $(RELEASE_DIR)/$(RELEASE_FOENIXLABS_ROM) -name '*.txt' -exec unix2dos '{}' ';'
+	cd $(RELEASE_DIR) && zip -9 -r $(RELEASE_FOENIXLABS_ROM).zip $(RELEASE_FOENIXLABS_ROM)
+	rm -r $(RELEASE_DIR)/$(RELEASE_FOENIXLABS_ROM)
+
 .PHONY: release-prg
 NODEP += release-prg
 RELEASE_PRG = emutos-prg-$(VERSION)

@@ -62,6 +62,12 @@
 #include "amiga.h"
 #include "lisa.h"
 #include "coldfire.h"
+/* Foenix A2560 stuff */
+#include "a2560_bios.h"
+#include "../foenix/trap.h"
+#include "../foenix/trap_bindings.h"
+#include "../foenix/cpu.h"
+
 #if WITH_CLI
 #include "../cli/clistub.h"
 #endif
@@ -163,7 +169,7 @@ static void vecs_init(void)
      * an endless loop.
      * New ColdFire programs are supposed to be clean and avoid zero
      * divides. So we keep the default panic() behaviour in such case. */
-#else
+#elif !defined(MACHINE_A2560U) && !defined(MACHINE_A2560K) && !defined(MACHINE_A2560M) && !defined(MACHINE_A2560X) && !defined(MACHINE_GENX)
     /* Original TOS cowardly ignores integer divide by zero. */
     VEC_DIVNULL = just_rte;
 #endif
@@ -247,6 +253,13 @@ static void bios_init(void)
     machine_detect();   /* detect hardware */
     KDEBUG(("machine_init()\n"));
     machine_init();     /* initialise machine-specific stuff */
+
+#if defined(MACHINE_A2560U) || defined(MACHINE_A2560K) || defined(MACHINE_A2560M) || defined(MACHINE_A2560X) || defined(MACHINE_GENX)
+    /* This must be done first because it detects long stack frames, that the trap handler needs to know about */
+	m68k_cpu_init();
+    KDEBUG(("Initialising Foenix lib trap interface cpu_has_long_frames:%d\n",cpu_has_long_frames));
+	trap_init();
+#endif
 
     /* Initialize the BIOS memory management */
     KDEBUG(("bmem_init()\n"));
@@ -395,6 +408,9 @@ static void bios_init(void)
     set_sr(0x2300);
 #else
     set_sr(0x2000);
+# if defined(MACHINE_A2560U) || defined(MACHINE_A2560K) || defined(MACHINE_A2560M) || defined(MACHINE_A2560X) || defined(MACHINE_GENX)
+    a2560_bios_enable_irqs();
+# endif
 #endif
 
 #if defined(MACHINE_ARANYM) || defined(TARGET_1024)
@@ -571,6 +587,32 @@ static void bios_init(void)
     }
 #endif
 
+#if 0 && (defined(MACHINE_A2560U) || defined(MACHINE_A2560K) || defined(MACHINE_A2560M) || defined(MACHINE_A2560X) || defined(MACHINE_GENX))
+    {
+        struct foenix_system_info_t sysinfo;
+        KDEBUG(("@sysinfo: %p\n", &sysinfo));
+        fnx_system_info(&sysinfo);
+        KDEBUG(("Model name: %s\n", sysinfo.model_name));
+        KDEBUG(("CPU ID    : %d\n", sysinfo.cpu_id));
+        KDEBUG(("CPU speed : %ld\n", sysinfo.cpu_speed_hz));
+        KDEBUG(("VRAM size : %ld\n", sysinfo.vram_size));
+        KDEBUG(("CPU name  : %s\n", sysinfo.cpu_name));
+        KDEBUG(("PCB rev.  : %c%c%c%c\n", sysinfo.pcb_revision_name[0], sysinfo.pcb_revision_name[1], sysinfo.pcb_revision_name[2], sysinfo.pcb_revision_name[3]));
+        KDEBUG(("FPGA date : %ld\n", sysinfo.fpga_date));
+        KDEBUG(("FPGA ver  : %d.%d\n", sysinfo.fpga_major, sysinfo.fpga_minor));
+        KDEBUG(("FPGA part#: %ld\n", sysinfo.fpga_partnumber));
+        KDEBUG(("sizeof(bool):%ld\n",sizeof(bool)));
+
+        fnx_sn76489_select(0);
+        fnx_sn76489_mute_all();
+        fnx_sn76489_freq(0,440);
+        fnx_sn76489_attenuation(0,0);
+
+    }
+
+#endif
+
+	
     KDEBUG(("bios_init() end\n"));
 }
 
@@ -826,6 +868,7 @@ void biosmain(void)
     run_reset_resident();       /* see comments above */
 #endif
 
+
 #if WITH_CLI
     if (bootflags & BOOTFLAG_EARLY_CLI) {
         /*
@@ -857,6 +900,20 @@ void biosmain(void)
         pd = (PD *) Pexec(PE_BASEPAGEFLAGS, (char *)PF_STANDARD, "", default_env);
         pd->p_tbase = (UBYTE *) exec_os;
         pd->p_tlen = pd->p_dlen = pd->p_blen = 0;
+
+#if defined(MACHINE_A2560U) || defined(MACHINE_A2560K) || defined(MACHINE_A2560M) || defined(MACHINE_A2560X) || defined(MACHINE_GENX)
+        // We don't have GEM/desktop yet.
+        pd->p_tbase = (UBYTE *) coma_start;
+#else
+        if (exec_os) {
+            /*
+            * start the default (ROM) shell
+            * like Atari TOS, we pass the default environment
+            */
+            pd->p_tbase = (UBYTE *) exec_os;
+        }
+#endif
+
         Pexec(PE_GO, "", (char *)pd, default_env);
     }
 
@@ -1257,6 +1314,11 @@ const PFLONG bios_vecs[] = {
     VEC(bios_9, mediach),
     VEC(bios_a, drvmap),
     VEC(bios_b, kbshift),
+
+    /* GenX OS extensions */
+    //!!VEC(bios_c, bmem_gettpa),  // We could also have a variable Bgetvar which returns a union... */
+    //!!VEC(bios_d, balloc_stram), // $d balloc_stram(ULONG size, BOOL fromTop): allocates memory, resizing the TPA. Should only be called before running the BDOS.
+    //!!VEC(bios_e, disk_drvrem)   // $e LONG Bdrvmem(void): like _drvmem system variable, returns bitfield of drives supporting media change.
 };
 
 const UWORD bios_ent = ARRAY_SIZE(bios_vecs);

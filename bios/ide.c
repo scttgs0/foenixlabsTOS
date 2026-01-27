@@ -35,6 +35,7 @@
 #include "processor.h"
 #include "biosmem.h"
 #include "amiga.h"
+#include "a2560_bios.h"
 #include "intmath.h"
 
 #if CONF_WITH_IDE
@@ -121,7 +122,15 @@ struct IDE
 #define IDE_WRITE_HEAD(i,a)       i->head = a
 
 #define IDE_READ_STATUS(i)        i->command
-#define IDE_READ_ALT_STATUS(i)    i->control
+#if defined(MACHINE_A2560U) || defined(MACHINE_A2560K) || defined(MACHINE_A2560X) || defined(MACHINE_GENX)
+    /* There seem to be a problem with IDE_READ_ALT_STATUS which makes really slow. Since we don't use
+    * interrupts, we can use the "real" status register, which works fine.
+    * This problem is known to exist on the U but hasn't been tried on the X, so we're just conservative here.
+    */
+# define IDE_READ_ALT_STATUS(i)    i->command
+#else
+# define IDE_READ_ALT_STATUS(i)    i->control
+#endif
 #define IDE_READ_ERROR(i)         i->features
 #define IDE_READ_SECTOR_NUMBER_SECTOR_COUNT(i) \
     MAKE_UWORD(i->sector_number, i->sector_count)
@@ -562,6 +571,8 @@ BOOL detect_ide(void)
 
 #ifdef MACHINE_AMIGA
     has_ide = has_gayle ? 0x01 : 0x00;
+#elif defined(MACHINE_A2560U) || defined(MACHINE_A2560K) || defined(MACHINE_A2560X) || defined(MACHINE_GENX)
+    has_ide = 0x01;
 #elif defined(MACHINE_M548X)
     has_ide = 0x01;
 #elif defined(MACHINE_FIREBEE)
@@ -770,10 +781,24 @@ static void ide_detect_devices(UWORD ifnum)
 
     for (i = 0; i < 2; i++) {
         ide_select_device(interface,i);
-        if (get_start_count(interface) == 0x0101) {
+
+#if defined(MACHINE_A2560U) || defined(MACHINE_A2560K) || defined(MACHINE_A2560X) || defined(MACHINE_GENX)
+        /* We get aa55. Spec says sector number and count should be 01. FPGA bug ? */    
+#else
+        if (get_start_count(interface) == 0x0101)
+#endif
+        {
             status = IDE_READ_STATUS(interface);
             signature = IDE_READ_CYLINDER_HIGH_CYLINDER_LOW(interface);
-            info->dev[i].type = ide_decode_type(status,signature);
+#if defined(MACHINE_A2560U) || defined(MACHINE_A2560K) || defined(MACHINE_A2560X) || defined(MACHINE_GENX)
+            /* Assume the first device is present
+             * (we don't support a second one for now). If it's not, we can't even reach this code. */
+            if (i == 0)
+                info->dev[i].type = DEVTYPE_ATA;
+            else
+#endif
+                info->dev[i].type = ide_decode_type(status,signature);
+          
         }
     }
 
@@ -1560,6 +1585,16 @@ LONG ide_ioctl(WORD dev,UWORD ctrl,void *arg)
             /* remove right padding with spaces */
             for (i = 38; i >= 0 && identify.model_number[i] == ' '; i--)
                 identify.model_number[i] = 0;
+
+#if defined(MACHINE_A2560U) || defined(MACHINE_A2560K) || defined(MACHINE_A2560X) || defined(MACHINE_GENX)
+            /* characters are in little endian words */
+            for (i = 0; i <= 38; i += 2) {
+                char c;
+                c = identify.model_number[i];
+                identify.model_number[i] = identify.model_number[i+1];
+                identify.model_number[i+1] = c;
+            }
+#endif
 
             strcpy(arg,identify.model_number);
             ret = E_OK;

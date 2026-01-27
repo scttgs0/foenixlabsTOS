@@ -33,6 +33,7 @@
 #include "../bdos/bdosstub.h"
 #include "amiga.h"
 #include "lisa.h"
+#include "a2560_bios.h"
 #include "disk.h"
 #include "acsi.h"
 
@@ -1157,6 +1158,14 @@ void clock_init(void)
         return amiga_clock_init();
     }
 #endif /* MACHINE_AMIGA */
+
+#if defined(MACHINE_A2560U) || defined(MACHINE_A2560K) || defined(MACHINE_A2560M) || defined(MACHINE_A2560X) || defined(MACHINE_GENX)
+    else if (TRUE)
+    {
+        a2560_clock_init();
+    }
+#endif
+
 #if CONF_WITH_NVRAM
     else if (has_nvram)
     {
@@ -1225,6 +1234,12 @@ void settime(LONG time)
     {
         /* Dummy case for conditional compilation */
     }
+#if defined(MACHINE_A2560U) || defined(MACHINE_A2560K) || defined(MACHINE_A2560M) || defined(MACHINE_A2560X) || defined(MACHINE_GENX)
+    else if (TRUE)
+    {
+        a2560_setdt(time);
+    }
+#endif
 #if CONF_WITH_NVRAM
     else if (has_nvram)
     {
@@ -1281,6 +1296,12 @@ LONG gettime(void)
         return lisa_getdt();
     }
 #endif /* MACHINE_LISA */
+#if defined(MACHINE_A2560U) || defined(MACHINE_A2560K) || defined(MACHINE_A2560M) || defined(MACHINE_A2560X) || defined(MACHINE_GENX)
+    else if (TRUE)
+    {
+        return a2560_getdt();
+    }
+#endif
 #if CONF_WITH_NVRAM
     else if (has_nvram)
     {

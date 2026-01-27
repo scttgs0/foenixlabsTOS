@@ -28,7 +28,10 @@
 #define Mediach(a) bios_l_w(0x9,a)
 #define Drvmap() bios_l_v(0xa)
 #define Kbshift(a) bios_l_w(0xb,a)
-
+/* GenX TOS extensions, to avoid the use of system variables */
+#define Bgettpa() bios_l_w(0xc,a)
+#define Balloc(a,b) bios_l_lw(0xd,a,b)
+#define Bdrvrem() bios_l_v(0xe)
 
 
 static __inline__ void bios_v_l(int op, long a)

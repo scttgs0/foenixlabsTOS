@@ -39,6 +39,12 @@ struct param rel_pblock;        /* mouse parameter block */
 
 void Initmous(WORD type, struct param *param, PFVOID newvec)
 {
+#if defined(MACHINE_A2560U) || defined(MACHINE_A2560K) || defined(MACHINE_A2560M) || defined(MACHINE_A2560X) || defined(MACHINE_GENX)
+    // These machines have no IKBD
+    kbdvecs.mousevec = (new_mousevec != NULL) ? new_mousevec : just_rts;
+    return
+#endif
+
     long retval = -1;           /* ok, if it stays so... */
     struct param *p = param;   /* pointer to parameter block */
 

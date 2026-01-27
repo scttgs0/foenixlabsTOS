@@ -19,6 +19,7 @@
 #include "vectors.h"
 #include "coldfire.h"
 #include "lisa.h"
+#include "a2560_bios.h"
 
 #if CONF_WITH_MFP || CONF_WITH_TT_MFP
 

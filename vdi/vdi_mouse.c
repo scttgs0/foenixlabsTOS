@@ -22,6 +22,10 @@
 #include "tosvars.h"
 #include "biosext.h"
 #include "lineavars.h"
+#include "a2560_bios.h"
+#if defined(MACHINE_A2560U) || defined(MACHINE_A2560K) || defined(MACHINE_A2560M) || defined(MACHINE_A2560X) || defined(MACHINE_GENX)
+# include "../foenix/vicky2.h"
+#endif
 #include "vdi_inline.h"
 #if WITH_AES
 #include "../aes/aesstub.h"

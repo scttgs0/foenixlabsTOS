@@ -34,6 +34,10 @@
 #include "midi.h"
 #include "amiga.h"
 
+#if defined(MACHINE_A2560U) || defined(MACHINE_A2560K) || defined(MACHINE_A2560M) || defined(MACHINE_A2560X) || defined(MACHINE_GENX)
+# include "../foenix/foenix.h"
+#endif
+
 #define DISPLAY_INSTRUCTION_AT_PC   0   /* set to 1 for extra info from dopanic() */
 #define DISPLAY_STACK               0   /* set to 1 for extra info from dopanic() */
 
@@ -142,6 +146,28 @@ static void kprintf_outc_stonx(int c)
 }
 #endif
 
+#if FOENIX_CHANNEL_A_DEBUG_PRINT
+static void kprintf_outc_foenix_channel_a(int c)
+{
+    char buf[2];
+    buf[0] = c;
+    buf[1] = 0;
+    channel_A_write(buf);
+}
+#endif
+
+#if FOENIX_COM3_DEBUG_PRINT
+static void kprintf_outc_foenix_com3(int c)
+{
+    if ((c&0xff) == '\n') {
+        while ((*UART3_CTRL & UART3_TX_EMPTY) == 0);
+        *UART3_DATA = '\r';
+    }
+    while ((*UART3_CTRL & UART3_TX_EMPTY) == 0);
+    *UART3_DATA = c;
+}
+#endif
+
 #if COLDFIRE_DEBUG_PRINT
 static void kprintf_outc_coldfire_rs232(int c)
 {
@@ -240,6 +266,14 @@ static int vkprintf(const char *fmt, va_list ap)
     if (stonx_kprintf_available) {
         return doprintf(kprintf_outc_stonx, fmt, ap);
     }
+#endif
+
+#if FOENIX_CHANNEL_A_DEBUG_PRINT
+    return doprintf(kprintf_outc_foenix_channel_a, fmt, ap);
+#endif
+
+#if FOENIX_COM3_DEBUG_PRINT
+    return doprintf(kprintf_outc_foenix_com3, fmt, ap);
 #endif
 
     /* let us hope nobody is doing 'pretty-print' with kprintf by

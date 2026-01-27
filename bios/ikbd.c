@@ -39,6 +39,7 @@
 #include "coldfire.h"
 #include "amiga.h"
 #include "lisa.h"
+#include "a2560_bios.h"
 
 
 /* forward declarations */
