@@ -1720,7 +1720,7 @@
  * always be displayed, on both cold boot and warm boot (reset).
  */
 #ifndef ALWAYS_SHOW_INITINFO
-# define ALWAYS_SHOW_INITINFO 0
+# define ALWAYS_SHOW_INITINFO 1
 #endif
 
 /*

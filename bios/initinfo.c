@@ -349,8 +349,8 @@ WORD initinfo(ULONG *pshiftbits)
 #else
     pair_start(_("Machine")); cprintf(machine_name()); pair_end();
 #endif
-    pair_start("ST-RAM"); cprintf_bytesize(stramsize); pair_end();
 
+pair_start("ST-RAM"); cprintf_bytesize(stramsize); pair_end();
 
 #if CONF_WITH_ALT_RAM
     if (altramsize > 0) {
