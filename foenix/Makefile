@@ -5,7 +5,7 @@
 # Normally this is passed from the EmuTOS makefile but if we want to use the lib as
 # standalone (without EmUTOS) we'll need to rework it. In particular, the same machine
 # (GenX, A2560M) can have different processors or flavors of it...
-CPUFLAGS=-m68060
+CPUFLAGS=-m68040
 
 TOOLCHAIN=m68k-atari-mint-
 CC=$(TOOLCHAIN)gcc
