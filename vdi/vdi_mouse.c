@@ -24,7 +24,7 @@
 #include "lineavars.h"
 #include "a2560_bios.h"
 
-#if defined(MACHINE_A2560U) || defined(MACHINE_A2560K) || defined(MACHINE_A2560M) || defined(MACHINE_A2560X) || defined(MACHINE_GENX)
+#if defined(FOENIXLABS_ANY)
 #include "../foenix/vicky2.h"
 #endif
 

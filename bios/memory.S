@@ -209,7 +209,7 @@ memconf:
         jmp     amiga_memconf
 amiga_memconf_ret:
         // Fall into memconf_done
-#elif defined(MACHINE_A2560U) || defined(MACHINE_A2560K) || defined(MACHINE_A2560M) || defined(MACHINE_A2560X) || defined(MACHINE_GENX)
+#elif defined(FOENIXLABS_ANY)
         .extern a2560_memconf
         lea     a2560_memconf_ret(pc),a6
         jmp     a2560_memconf

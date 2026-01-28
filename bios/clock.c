@@ -1159,7 +1159,7 @@ void clock_init(void)
     }
 #endif /* MACHINE_AMIGA */
 
-#if defined(MACHINE_A2560U) || defined(MACHINE_A2560K) || defined(MACHINE_A2560M) || defined(MACHINE_A2560X) || defined(MACHINE_GENX)
+#if defined(FOENIXLABS_ANY)
     else if (TRUE)
     {
         a2560_clock_init();
@@ -1234,7 +1234,7 @@ void settime(LONG time)
     {
         /* Dummy case for conditional compilation */
     }
-#if defined(MACHINE_A2560U) || defined(MACHINE_A2560K) || defined(MACHINE_A2560M) || defined(MACHINE_A2560X) || defined(MACHINE_GENX)
+#if defined(FOENIXLABS_ANY)
     else if (TRUE)
     {
         a2560_setdt(time);
@@ -1296,7 +1296,7 @@ LONG gettime(void)
         return lisa_getdt();
     }
 #endif /* MACHINE_LISA */
-#if defined(MACHINE_A2560U) || defined(MACHINE_A2560K) || defined(MACHINE_A2560M) || defined(MACHINE_A2560X) || defined(MACHINE_GENX)
+#if defined(FOENIXLABS_ANY)
     else if (TRUE)
     {
         return a2560_getdt();

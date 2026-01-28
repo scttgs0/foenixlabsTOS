@@ -638,7 +638,7 @@ void machine_detect(void)
  */
 void machine_init(void)
 {
-#if defined(MACHINE_A2560U) || defined(MACHINE_A2560K) || defined(MACHINE_A2560M) || defined(MACHINE_A2560X) || defined(MACHINE_GENX)
+#if defined(FOENIXLABS_ANY)
     a2560_bios_init();
     /* There is an early setup of the UART so we can use KDEBUG earlier. */
     //TODOboot_status |= RS232_AVAILABLE;
@@ -855,7 +855,7 @@ const char * machine_name(void)
     return "Apple Lisa";
 #elif defined(MACHINE_M548X)
     return m548x_machine_name();
-#elif defined(MACHINE_A2560U) || defined(MACHINE_A2560K) || defined(MACHINE_A2560M) || defined(MACHINE_A2560X) || defined(MACHINE_GENX)
+#elif defined(FOENIXLABS_ANY)
     struct foenix_system_info_t info;
 
     a2560_system_info(&info);

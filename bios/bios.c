@@ -169,7 +169,7 @@ static void vecs_init(void)
      * an endless loop.
      * New ColdFire programs are supposed to be clean and avoid zero
      * divides. So we keep the default panic() behaviour in such case. */
-#elif !defined(MACHINE_A2560U) && !defined(MACHINE_A2560K) && !defined(MACHINE_A2560M) && !defined(MACHINE_A2560X) && !defined(MACHINE_GENX)
+#elif !defined(FOENIXLABS_ANY)
     /* Original TOS cowardly ignores integer divide by zero. */
     VEC_DIVNULL = just_rte;
 #endif
@@ -254,7 +254,7 @@ static void bios_init(void)
     KDEBUG(("machine_init()\n"));
     machine_init();     /* initialise machine-specific stuff */
 
-#if defined(MACHINE_A2560U) || defined(MACHINE_A2560K) || defined(MACHINE_A2560M) || defined(MACHINE_A2560X) || defined(MACHINE_GENX)
+#if defined(FOENIXLABS_ANY)
     /* This must be done first because it detects long stack frames, that the trap handler needs to know about */
 	m68k_cpu_init();
     KDEBUG(("Initialising Foenix lib trap interface cpu_has_long_frames:%d\n",cpu_has_long_frames));
@@ -408,7 +408,7 @@ static void bios_init(void)
     set_sr(0x2300);
 #else
     set_sr(0x2000);
-# if defined(MACHINE_A2560U) || defined(MACHINE_A2560K) || defined(MACHINE_A2560M) || defined(MACHINE_A2560X) || defined(MACHINE_GENX)
+# if defined(FOENIXLABS_ANY)
     a2560_bios_enable_irqs();
 # endif
 #endif
@@ -587,7 +587,7 @@ static void bios_init(void)
     }
 #endif
 
-#if 0 && (defined(MACHINE_A2560U) || defined(MACHINE_A2560K) || defined(MACHINE_A2560M) || defined(MACHINE_A2560X) || defined(MACHINE_GENX))
+#if 0 && (defined(FOENIXLABS_ANY))
     {
         struct foenix_system_info_t sysinfo;
         KDEBUG(("@sysinfo: %p\n", &sysinfo));
@@ -901,7 +901,7 @@ void biosmain(void)
         pd->p_tbase = (UBYTE *) exec_os;
         pd->p_tlen = pd->p_dlen = pd->p_blen = 0;
 
-#if defined(MACHINE_A2560U) || defined(MACHINE_A2560K) || defined(MACHINE_A2560M) || defined(MACHINE_A2560X) || defined(MACHINE_GENX)
+#if defined(FOENIXLABS_ANY)
         // We don't have GEM/desktop yet.
         pd->p_tbase = (UBYTE *) coma_start;
 #else

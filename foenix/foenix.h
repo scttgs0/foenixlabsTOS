@@ -16,7 +16,7 @@
 #ifndef FOENIX_H
 #define FOENIX_H
 
-#if !(defined(MACHINE_A2560K) || defined(MACHINE_A2560M) || defined(MACHINE_A2560X) || defined(MACHINE_A2560U) || defined(MACHINE_GENX))
+#if !(defined(FOENIXLABS_ANY))
 #include "../include/config.h"
 #endif
 

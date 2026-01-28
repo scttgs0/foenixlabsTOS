@@ -324,7 +324,7 @@ WORD initinfo(ULONG *pshiftbits)
     pair_start(_("CPU type"));
 #ifdef __mcoldfire__
     cprintf("ColdFire V4e");
-#elif defined(MACHINE_A2560U) || defined(MACHINE_A2560K) || defined(MACHINE_A2560M) || defined(MACHINE_A2560X) || defined(MACHINE_GENX)
+#elif defined(FOENIXLABS_ANY)
     struct foenix_system_info_t info;
     a2560_system_info(&info);
     cprintf("%s @ %ldMHz", info.cpu_name, info.cpu_speed_hz / 1000000);

@@ -109,7 +109,7 @@ void init_delay(void)
  */
 void calibrate_delay(void)
 {
-#if defined(MACHINE_A2560U) || defined(MACHINE_A2560K) || defined(MACHINE_A2560M) || defined(MACHINE_A2560X) || defined(MACHINE_GENX)
+#if defined(FOENIXLABS_ANY)
     loopcount_1_msec = a2560_delay_calibrate(CALIBRATION_TIME * loopcount_1_msec);
 #elif CONF_WITH_MFP
     ULONG loopcount, intcount;

@@ -11,7 +11,7 @@
 
 #include "asmdefs.h"
 
-#if defined(MACHINE_A2560U) || defined(MACHINE_A2560K) || defined(MACHINE_A2560M) || defined(MACHINE_A2560X) || defined(MACHINE_GENX)
+#if defined(FOENIXLABS_ANY)
 #include "../foenix/foenix.i"
 #endif
 
@@ -479,7 +479,7 @@ vbl_no_dump:
 #ifdef __mcoldfire__
         movem.l (sp), d1-d7/a0-a6       // restore registers
         lea     56(sp), sp
-#elif defined(MACHINE_A2560U) || defined(MACHINE_A2560K) || defined(MACHINE_A2560M) || defined(MACHINE_A2560X) || defined(MACHINE_GENX)
+#elif defined(FOENIXLABS_ANY)
         movem.l (sp)+, d1-d7/a1-a6      // restore registers
 #else
         movem.l (sp)+, d0-d7/a0-a6      // restore registers
